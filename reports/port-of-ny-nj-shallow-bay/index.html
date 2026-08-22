@@ -3,289 +3,330 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Port of NY/NJ &amp; the Shallow Bay thesis — Faropoint</title>
+<title>Port of NY/NJ &amp; the Shallow Bay thesis — Faropoint LPAC Tour</title>
 <link rel="icon" href="./assets/Favicon.svg">
 <link rel="stylesheet" href="./colors_and_type.css">
-<script src="https://unpkg.com/lucide@latest"></script>
 <style>
   * { box-sizing: border-box; }
-  body { margin:0; background:var(--fp-bg-page); color:var(--fp-fg1); font-family:var(--fp-font-body); }
-  .nav { background:var(--fp-bg-nav); color:#fff; padding:0 var(--fp-space-6); height:56px; display:flex; align-items:center; gap:var(--fp-space-4); }
-  .nav img { height:18px; }
-  .nav .tag { font-size:var(--fp-size-label); color:var(--fp-fg-on-dark-muted); border-left:1px solid rgba(255,255,255,0.18); padding-left:var(--fp-space-4); }
-  .wrap { max-width:1120px; margin:0 auto; padding:var(--fp-space-10) var(--fp-space-8) var(--fp-space-12); display:flex; flex-direction:column; gap:var(--fp-space-10); }
+  body { margin:0; background:#dfe2e6; color:var(--fp-fg1); font-family:var(--fp-font-body); }
+  .doc { display:flex; flex-direction:column; align-items:center; gap:28px; padding:28px 0 48px; }
+  .page { width:8.5in; height:11in; background:#fff; box-shadow:var(--fp-shadow-lg); padding:0.42in 0.55in 0.4in; display:flex; flex-direction:column; gap:9px; position:relative; overflow:hidden; }
 
-  header.hero { display:flex; flex-direction:column; gap:var(--fp-space-2); }
-  .fp-headline.hero-size { font-size:32px; }
+  /* Page chrome */
+  .doc-header { display:flex; align-items:center; justify-content:space-between; padding-bottom:10px; border-bottom:2px solid var(--fp-blue-800); }
+  .doc-header img { height:20px; }
+  .doc-header .meta { text-align:right; }
+  .page-footer { position:absolute; left:0.55in; right:0.55in; bottom:0.32in; display:flex; justify-content:space-between; align-items:flex-end; border-top:1px solid var(--fp-divider); padding-top:8px; }
+  .page-footer .fp-caption { max-width:82%; }
 
-  /* KPI strip */
-  .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--fp-space-4); }
-  .card { background:var(--fp-bg-card); border:1px solid var(--fp-border); border-radius:var(--fp-radius-lg); box-shadow:var(--fp-shadow); padding:var(--fp-space-5); display:flex; flex-direction:column; gap:6px; }
+  h1.doc-title { margin:2px 0 0; }
+  .fp-headline.doc-size { font-size:26px; }
+
+  /* KPI band */
+  .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .card { background:var(--fp-bg-card); border:1px solid var(--fp-border); border-radius:var(--fp-radius-lg); box-shadow:var(--fp-shadow); padding:9px 12px; display:flex; flex-direction:column; gap:3px; }
   .card.dark { background:var(--fp-bg-dark); border-color:rgba(255,255,255,0.07); color:var(--fp-fg-on-dark); }
   .card.dark .fp-overline { color:var(--fp-fg-on-dark-muted); }
   .card.dark .fp-caption { color:var(--fp-fg-on-dark-muted); }
-  .delta { font-size:var(--fp-size-label); font-weight:500; color:var(--fp-go); display:flex; align-items:center; gap:4px; }
-  .delta svg { width:12px; height:12px; }
+  .card .fp-kpi { font-size:24px; color:var(--fp-fg2); }
+  .card.dark .fp-kpi { color:var(--fp-signal-orange); }
+  .delta { font-size:10.5px; font-weight:500; color:var(--fp-go); display:flex; align-items:center; gap:3px; }
+  .delta.flat { color:var(--fp-fg4); }
+  .delta.down { color:var(--fp-alert); }
 
-  /* Section shell */
-  section.block { display:flex; flex-direction:column; gap:var(--fp-space-4); }
-  .block-head { display:flex; flex-direction:column; gap:4px; }
+  section.block { display:flex; flex-direction:column; gap:6px; }
+  .block-head { display:flex; flex-direction:column; gap:2px; }
 
-  /* Flow diagram */
-  .flow { display:grid; grid-template-columns:1fr auto 1fr auto 1fr auto 1fr; align-items:stretch; gap:var(--fp-space-3); }
-  .flow-card { background:var(--fp-bg-card); border:1px solid var(--fp-border); border-radius:var(--fp-radius-lg); box-shadow:var(--fp-shadow); padding:var(--fp-space-4); display:flex; flex-direction:column; gap:8px; }
-  .flow-card .step { display:flex; align-items:center; gap:8px; }
-  .flow-card .step .num { width:22px; height:22px; border-radius:999px; background:var(--fp-blue-800); color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  /* Chart card */
+  .chart-card { background:var(--fp-bg-card); border:1px solid var(--fp-border); border-radius:var(--fp-radius-lg); box-shadow:var(--fp-shadow); padding:11px 13px; display:flex; flex-direction:column; gap:7px; }
+  .bars { display:flex; flex-direction:column; gap:5px; }
+  .bar-row { display:grid; grid-template-columns:118px 1fr 108px; align-items:center; gap:10px; }
+  .bar-row.compact { grid-template-columns:150px 1fr 74px; }
+  .bar-row .name { font-size:11px; font-weight:500; color:var(--fp-fg1); }
+  .bar-row.hero .name { font-weight:700; color:var(--fp-fg2); }
+  .bar-track { position:relative; height:15px; background:var(--fp-divider); border-radius:var(--fp-radius-sm); overflow:hidden; }
+  .bar-fill { position:absolute; left:0; top:0; bottom:0; border-radius:var(--fp-radius-sm); }
+  .bar-row .value { font-size:11px; font-weight:700; color:var(--fp-fg2); text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .bar-row .value .sub { display:block; font-weight:400; color:var(--fp-fg4); font-size:9.5px; }
+  .legend { display:flex; gap:14px; flex-wrap:wrap; }
+  .legend-item { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--fp-fg3); }
+  .legend-dot { width:9px; height:9px; border-radius:3px; flex-shrink:0; }
+
+  table.data-table { width:100%; border-collapse:collapse; font-size:10px; }
+  table.data-table caption { text-align:left; font-size:9.5px; color:var(--fp-fg4); margin-bottom:6px; }
+  table.data-table th, table.data-table td { text-align:right; padding:5px 8px; border-bottom:1px solid var(--fp-divider); }
+  table.data-table th:first-child, table.data-table td:first-child { text-align:left; }
+  table.data-table th { font-size:9px; color:var(--fp-fg4); font-weight:700; text-transform:uppercase; letter-spacing:0.3px; }
+  table.data-table tr.hero td { font-weight:700; color:var(--fp-fg2); background:var(--fp-orange-100); }
+
+  /* Flow */
+  .flow { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .flow-card { background:var(--fp-bg-card); border:1px solid var(--fp-border); border-radius:var(--fp-radius-lg); box-shadow:var(--fp-shadow); padding:8px 10px; display:flex; flex-direction:column; gap:4px; }
+  .flow-card .step { display:flex; align-items:center; gap:6px; }
+  .flow-card .step .num { width:17px; height:17px; border-radius:999px; background:var(--fp-blue-800); color:#fff; font-size:9.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .flow-card.hero .step .num { background:var(--fp-signal-orange); color:var(--fp-charcoal); }
-  .flow-arrow { display:flex; align-items:center; justify-content:center; color:var(--fp-blue-300); }
-  .flow-arrow svg { width:20px; height:20px; }
-  @media (max-width:920px){ .flow{ grid-template-columns:1fr; } .flow-arrow{ transform:rotate(90deg); justify-content:flex-start; padding-left:4px;} }
+  .flow-card .step .fp-body-heading { font-size:11px; }
+  .flow-card p { margin:0; font-size:9.5px; line-height:1.4; color:var(--fp-fg3); }
 
-  /* Bar chart */
-  .chart-card { background:var(--fp-bg-card); border:1px solid var(--fp-border); border-radius:var(--fp-radius-lg); box-shadow:var(--fp-shadow); padding:var(--fp-space-6); display:flex; flex-direction:column; gap:var(--fp-space-5); }
-  .bars { display:flex; flex-direction:column; gap:var(--fp-space-4); }
-  .bar-row { display:grid; grid-template-columns:230px 1fr 76px; align-items:center; gap:var(--fp-space-3); }
-  .bar-row .name { font-size:var(--fp-size-body); font-weight:500; color:var(--fp-fg1); }
-  .bar-row .name .sub { display:block; font-size:var(--fp-size-caption); color:var(--fp-fg4); font-weight:400; }
-  .bar-track { position:relative; height:20px; background:var(--fp-divider); border-radius:var(--fp-radius-sm); overflow:hidden; }
-  .bar-fill { position:absolute; left:0; top:0; bottom:0; border-radius:var(--fp-radius-sm); transition:filter 150ms ease-out; }
-  .bar-row:hover .bar-fill { filter:brightness(1.06); }
-  .bar-row .value { font-size:var(--fp-size-body-head); font-weight:700; color:var(--fp-fg2); text-align:right; font-variant-numeric:tabular-nums; }
-  .legend { display:flex; gap:var(--fp-space-5); flex-wrap:wrap; }
-  .legend-item { display:flex; align-items:center; gap:6px; font-size:var(--fp-size-label); color:var(--fp-fg3); }
-  .legend-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
-
-  /* Two-col layout for charts */
-  .chart-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--fp-space-5); align-items:start; }
-  @media (max-width:920px){ .chart-grid{ grid-template-columns:1fr; } }
-
-  /* Faropoint transaction timeline */
-  .timeline { display:flex; flex-direction:column; gap:0; border-left:2px solid var(--fp-border); margin-left:8px; }
-  .tl-item { position:relative; padding:0 0 var(--fp-space-6) var(--fp-space-6); }
+  /* Timeline */
+  .timeline { display:flex; flex-direction:column; gap:0; border-left:2px solid var(--fp-border); margin-left:6px; }
+  .tl-item { position:relative; padding:0 0 7px 16px; }
   .tl-item:last-child { padding-bottom:0; }
-  .tl-item::before { content:""; position:absolute; left:-7px; top:2px; width:12px; height:12px; border-radius:999px; background:var(--fp-signal-orange); border:2px solid var(--fp-bg-page); }
-  .tl-item .tl-amount { font-family:var(--fp-font-body); font-weight:700; font-size:18px; color:var(--fp-fg2); }
-  .tl-item .tl-meta { font-size:var(--fp-size-caption); color:var(--fp-fg4); margin-bottom:2px; }
-  .tl-item .tl-desc { font-size:var(--fp-size-body); color:var(--fp-fg1); margin-top:2px; }
+  .tl-item::before { content:""; position:absolute; left:-6px; top:2px; width:10px; height:10px; border-radius:999px; background:var(--fp-signal-orange); border:2px solid #fff; }
+  .tl-item .tl-row { display:flex; align-items:baseline; gap:8px; }
+  .tl-item .tl-amount { font-weight:700; font-size:12.5px; color:var(--fp-fg2); }
+  .tl-item .tl-meta { font-size:9px; color:var(--fp-fg4); }
+  .tl-item .tl-desc { font-size:10px; color:var(--fp-fg1); margin-top:1px; line-height:1.35; }
 
-  /* Data table (accessibility) */
-  table.data-table { width:100%; border-collapse:collapse; font-size:var(--fp-size-body); }
-  table.data-table caption { text-align:left; font-size:var(--fp-size-label); color:var(--fp-fg4); margin-bottom:8px; }
-  table.data-table th, table.data-table td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--fp-divider); }
-  table.data-table th { font-size:var(--fp-size-label); color:var(--fp-fg4); font-weight:700; text-transform:uppercase; letter-spacing:0.4px; }
-  details.table-toggle summary { cursor:pointer; font-size:var(--fp-size-label); color:var(--fp-fg3); font-weight:500; }
-  details.table-toggle summary:hover { color:var(--fp-orange-800); }
+  .two-col { display:grid; grid-template-columns:1.1fr 0.9fr; gap:12px; align-items:start; }
+  .notable-list { display:flex; flex-direction:column; gap:6px; }
+  .notable-item { font-size:10px; color:var(--fp-fg1); border-bottom:1px solid var(--fp-divider); padding-bottom:6px; }
+  .notable-item:last-child { border-bottom:0; padding-bottom:0; }
+  .notable-item b { color:var(--fp-fg2); }
 
-  footer { border-top:1px solid var(--fp-border); padding-top:var(--fp-space-5); display:flex; flex-direction:column; gap:6px; }
-  footer .fp-caption a { color:var(--fp-fg4); }
-  footer .fp-caption a:hover { color:var(--fp-orange-800); }
+  .callout { background:var(--fp-bg-page); border-left:3px solid var(--fp-signal-orange); border-radius:0 var(--fp-radius) var(--fp-radius) 0; padding:9px 12px; font-size:10.5px; color:var(--fp-fg1); }
+
+  @media print {
+    body { background:#fff; }
+    .doc { padding:0; gap:0; }
+    .page { box-shadow:none; width:auto; min-height:100vh; page-break-after:always; }
+    .page:last-child { page-break-after:auto; }
+  }
+  @page { size: letter; margin:0; }
 </style>
 </head>
 <body>
+<div class="doc">
 
-<nav class="nav">
-  <img src="./assets/FP-logo_light.svg" alt="Faropoint">
-  <span class="tag">Acquisitions Intelligence — Northeast</span>
-</nav>
-
-<div class="wrap">
-
-  <header class="hero">
-    <h1 class="fp-headline hero-size">
-      <span class="fp-headline-section">Port of NY/NJ</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">The engine behind the Shallow Bay thesis</span>
-    </h1>
-    <p class="fp-headline-sub">The nation's second-busiest gateway keeps pushing record import volume into Northern New Jersey — and small-bay, infill industrial space is where that freight actually lands. Prepared for Orry Michael, VP Acquisitions, Northeast.</p>
-  </header>
-
-  <!-- KPI STRIP -->
-  <section class="kpi-grid">
-    <div class="card">
-      <div class="fp-overline">Port of NY/NJ · 2025 volume</div>
-      <div class="fp-kpi" style="color:var(--fp-fg2)">8.9M TEU</div>
-      <div class="delta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 19V5M5 12l7-7 7 7"/></svg>+2.3% YoY — 3rd-busiest year on record</div>
-    </div>
-    <div class="card">
-      <div class="fp-overline">National rank</div>
-      <div class="fp-kpi" style="color:var(--fp-fg2)">No. 2</div>
-      <div class="fp-caption">Busiest East Coast gateway; 2nd-busiest U.S. port for loaded containers</div>
-    </div>
-    <div class="card">
-      <div class="fp-overline">Rail lifts, full-year 2025</div>
-      <div class="fp-kpi" style="color:var(--fp-fg2)">718,942</div>
-      <div class="delta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 19V5M5 12l7-7 7 7"/></svg>+12.4% YoY containers</div>
-    </div>
-    <div class="card dark">
-      <div class="fp-overline">Shallow-bay vacancy</div>
-      <div class="fp-kpi">4.8%</div>
-      <div class="fp-caption">vs. 8.1% for buildings &gt;500K SF — the supply gap Faropoint underwrites to</div>
-    </div>
-  </section>
-
-  <!-- FLOW NARRATIVE -->
-  <section class="block">
-    <div class="block-head">
-      <h2 class="fp-section-heading">From the dock to the dock door</h2>
-      <p class="fp-body" style="color:var(--fp-fg3); max-width:78ch;">Rising port throughput doesn't stay at the terminal — it cascades into last-mile distribution demand across the state and the wider Northeast region. Shallow bay, infill product is the format built to absorb it.</p>
-    </div>
-    <div class="flow">
-      <div class="flow-card">
-        <div class="step"><span class="num">1</span><span class="fp-body-heading">Port volume climbs</span></div>
-        <p class="fp-body" style="color:var(--fp-fg3)">8.9M TEU in 2025, imports up 1.7% to 4.5M TEU despite tariff uncertainty.</p>
-      </div>
-      <div class="flow-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
-      <div class="flow-card">
-        <div class="step"><span class="num">2</span><span class="fp-body-heading">Freight fans out regionally</span></div>
-        <p class="fp-body" style="color:var(--fp-fg3)">Cargo moves off-port via the NJ Turnpike corridor and rail (+12.4% YoY) into distribution nodes statewide.</p>
-      </div>
-      <div class="flow-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
-      <div class="flow-card">
-        <div class="step"><span class="num">3</span><span class="fp-body-heading">Big-box supply can't flex</span></div>
-        <p class="fp-body" style="color:var(--fp-fg3)">Bulk buildings &gt;500K SF run 8.1% vacant; 3PL and e-commerce users need smaller, closer-in space fast.</p>
-      </div>
-      <div class="flow-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
-      <div class="flow-card hero">
-        <div class="step"><span class="num">4</span><span class="fp-body-heading">Shallow bay absorbs it</span></div>
-        <p class="fp-body" style="color:var(--fp-fg3)">Small-bay product (&lt;100K SF) sits at 4.8% vacancy — the tightest, most durable format in the region.</p>
+  <!-- ================= PAGE 1 ================= -->
+  <div class="page">
+    <div class="doc-header">
+      <img src="./assets/FP-logo.svg" alt="Faropoint">
+      <div class="meta">
+        <div class="fp-overline">LPAC Investor Tour — Northeast</div>
+        <div class="fp-caption">H1 2026 · Prepared for Orry Michael, VP Acquisitions</div>
       </div>
     </div>
-  </section>
 
-  <!-- CHARTS -->
-  <section class="block">
-    <div class="block-head">
-      <h2 class="fp-section-heading">Why the format wins</h2>
-      <p class="fp-body" style="color:var(--fp-fg3); max-width:78ch;">Two data points explain the thesis: vacancy is structurally tighter in shallow bay than in any other format, and rent holds firmest in the submarkets closest to the port.</p>
-    </div>
+    <header>
+      <h1 class="fp-headline doc-size"><span class="fp-headline-section">Port of NY/NJ</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">Why it anchors the Shallow Bay thesis</span></h1>
+      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">H1 2026 volume confirms the port's scale as the East Coast's leading gateway — the demand engine behind Faropoint's infill, shallow-bay industrial strategy in Northern New Jersey. Source: Cushman &amp; Wakefield, <i>H1 2026 Port of New York &amp; New Jersey Report</i>.</p>
+    </header>
 
-    <div class="chart-grid">
-      <!-- Vacancy chart -->
+    <section class="kpi-grid">
+      <div class="card dark">
+        <div class="fp-overline">Rank</div>
+        <div class="fp-kpi">No. 1</div>
+        <div class="fp-caption">Busiest port on the East Coast</div>
+      </div>
+      <div class="card">
+        <div class="fp-overline">H1 2026 total volume</div>
+        <div class="fp-kpi">4.4M TEUs</div>
+        <div class="delta flat">▬ +0.2% YoY · No. 3 nationally</div>
+      </div>
+      <div class="card">
+        <div class="fp-overline">Goods moved (2024)</div>
+        <div class="fp-kpi">$264B</div>
+        <div class="fp-caption">Value of cargo through the port</div>
+      </div>
+      <div class="card">
+        <div class="fp-overline">Rail cargo, H1 2026</div>
+        <div class="fp-kpi">341,671</div>
+        <div class="fp-caption">Containers moved by rail</div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <h2 class="fp-section-heading" style="font-size:16px;">A top-3 gateway, gaining loaded import share</h2>
+        <p class="fp-body" style="color:var(--fp-fg3); font-size:10.5px;">Port of NY/NJ is 1 of only 3 U.S. ports to post more than 2.0M TEUs of loaded import cargo in H1 2026 — and holds 18.1% of top-nine-port volume.</p>
+      </div>
       <div class="chart-card">
-        <div>
-          <div class="fp-body-heading">Industrial vacancy by format</div>
-          <div class="fp-caption">Q2 2026 · percent vacant</div>
-        </div>
-        <div class="bars" id="chart-vacancy"></div>
+        <div class="fp-body-heading" style="font-size:11px;">H1 2026 total container volume by port</div>
+        <div class="bars" id="chart-ports"></div>
         <div class="legend">
-          <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-1)"></span>Faropoint's target format</span>
-          <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-2)"></span>Regional blend</span>
-          <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-3)"></span>National benchmarks</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-1)"></span>Port of NY/NJ</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-2)"></span>West Coast gateways</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-3)"></span>Other East/Gulf Coast ports</span>
         </div>
-        <details class="table-toggle">
-          <summary>View as table</summary>
-          <table class="data-table">
-            <caption>Industrial vacancy rate by building format, Q2 2026</caption>
-            <thead><tr><th>Format</th><th>Vacancy</th></tr></thead>
-            <tbody>
-              <tr><td>Shallow bay / small bay (&lt;100K SF)</td><td>4.8%</td></tr>
-              <tr><td>Northern &amp; Central NJ, all formats</td><td>~8.5%</td></tr>
-              <tr><td>Large-format (&gt;500K SF)</td><td>8.1%</td></tr>
-              <tr><td>National, buildings &gt;100K SF</td><td>9.7%</td></tr>
-            </tbody>
-          </table>
-        </details>
+        <table class="data-table">
+          <caption>Top 9 U.S. ports, H1 2026 vs. H1 2025</caption>
+          <thead><tr><th>Port</th><th>Total TEUs</th><th>YoY</th><th>Loaded imports</th><th>YoY</th><th>Share</th></tr></thead>
+          <tbody>
+            <tr><td>Los Angeles</td><td>5,122,603</td><td>+3.4%</td><td>2,675,892</td><td>+5.0%</td><td>21.0%</td></tr>
+            <tr><td>Long Beach</td><td>4,829,578</td><td>+1.7%</td><td>2,347,999</td><td>+2.6%</td><td>19.8%</td></tr>
+            <tr class="hero"><td>New York/New Jersey</td><td>4,427,159</td><td>+0.2%</td><td>2,229,447</td><td>−0.2%</td><td>18.1%</td></tr>
+            <tr><td>Savannah</td><td>2,837,324</td><td>−0.8%</td><td>1,420,121</td><td>+2.1%</td><td>11.6%</td></tr>
+            <tr><td>Houston</td><td>2,229,473</td><td>+2.8%</td><td>1,029,667</td><td>+6.8%</td><td>9.1%</td></tr>
+            <tr><td>Virginia</td><td>1,636,588</td><td>−0.3%</td><td>797,610</td><td>+5.6%</td><td>6.7%</td></tr>
+            <tr><td>Charleston</td><td>1,185,901</td><td>−9.5%</td><td>577,901</td><td>−8.8%</td><td>4.9%</td></tr>
+            <tr><td>Oakland</td><td>1,114,666</td><td>−2.5%</td><td>473,864</td><td>−1.0%</td><td>4.6%</td></tr>
+            <tr><td>Seattle Tacoma</td><td>1,066,862</td><td>−15.6%</td><td>520,095</td><td>−13.9%</td><td>4.4%</td></tr>
+          </tbody>
+        </table>
       </div>
+    </section>
 
-      <!-- Rent chart -->
-      <div class="chart-card">
-        <div>
-          <div class="fp-body-heading">Asking rent by proximity to port</div>
-          <div class="fp-caption">Q1–Q2 2026 · $/SF, triple net</div>
-        </div>
-        <div class="bars" id="chart-rent"></div>
-        <div class="legend">
-          <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-1)"></span>Prime, port/turnpike-adjacent</span>
-          <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-2)"></span>Meadowlands</span>
-          <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-3)"></span>Port Newark–Elizabeth</span>
-        </div>
-        <details class="table-toggle">
-          <summary>View as table</summary>
-          <table class="data-table">
-            <caption>Asking rent by Northern NJ submarket, Q1–Q2 2026</caption>
-            <thead><tr><th>Submarket</th><th>Asking rent (NNN)</th></tr></thead>
-            <tbody>
-              <tr><td>Prime, port / NJ Turnpike-adjacent</td><td>~$20.00/SF</td></tr>
-              <tr><td>Meadowlands</td><td>$16.01/SF</td></tr>
-              <tr><td>Port Newark–Elizabeth</td><td>$15.98/SF</td></tr>
-            </tbody>
-          </table>
-        </details>
+    <section class="block">
+      <div class="callout">
+        <b>Diverse, durable trade base.</b> The port serves more than 60 million consumers within a 250-mile radius — roughly one-third of U.S. GDP — via a diversified partner base (China, India, Italy, Germany, France) that mitigates any single-lane disruption. The Port Authority is investing to sustain this scale: a U.S. Army Corps of Engineers agreement to evaluate deepening channels to 55 feet, plus a redevelopment of the Newark-Elizabeth complex's northern entrance.
+      </div>
+    </section>
+
+    <div class="page-footer">
+      <p class="fp-caption">Source: Cushman &amp; Wakefield, <i>H1 2026 Port of New York &amp; New Jersey Report</i> (Instant Insight).</p>
+      <p class="fp-caption">1 of 2 · Faropoint</p>
+    </div>
+  </div>
+
+  <!-- ================= PAGE 2 ================= -->
+  <div class="page">
+    <div class="doc-header">
+      <img src="./assets/FP-logo.svg" alt="Faropoint">
+      <div class="meta">
+        <div class="fp-overline">LPAC Investor Tour — Northeast</div>
+        <div class="fp-caption">H1 2026 · Port Region &amp; Shallow Bay</div>
       </div>
     </div>
-  </section>
 
-  <!-- FAROPOINT FOOTPRINT -->
-  <section class="block">
-    <div class="block-head">
-      <h2 class="fp-section-heading">Faropoint's position on the thesis</h2>
-      <p class="fp-body" style="color:var(--fp-fg3); max-width:78ch;">Acquisition, financing and research activity all point the same direction — infill, shallow-bay space serving the NY/NJ port corridor and comparable freight-adjacent metros.</p>
-    </div>
-    <div class="timeline">
-      <div class="tl-item">
-        <div class="tl-meta">Jul 2025 · Multi-market</div>
-        <div class="tl-amount">$328M</div>
-        <div class="tl-desc">Acquired a 30-building, 1.8M SF shallow-bay portfolio from Mapletree spanning NJ, GA, FL, TX and PA.</div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-meta">Rockaway &amp; Morris County, NJ</div>
-        <div class="tl-amount">79,000 SF</div>
-        <div class="tl-desc">Grew the Morris County shallow-bay footprint with a JLL-brokered acquisition from NJDG.</div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-meta">Bergen County, NJ</div>
-        <div class="tl-amount">~$17M</div>
-        <div class="tl-desc">Joint-venture acquisition of roughly 73,000 SF of shallow-bay industrial space.</div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-meta">Jan 2026 · Portfolio financing</div>
-        <div class="tl-amount">$273M</div>
-        <div class="tl-desc">Secured a refinance loan against the shallow-bay portfolio, underwriting continued rent and occupancy strength.</div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-meta">Research</div>
-        <div class="tl-amount">9 markets</div>
-        <div class="tl-desc">Co-published "Beyond the Big Box" with CompStak, benchmarking small-bay trends across nine major U.S. markets including New Jersey.</div>
-      </div>
-    </div>
-  </section>
+    <header>
+      <h1 class="fp-headline doc-size"><span class="fp-headline-section">Port Region</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">Where port volume becomes real estate demand</span></h1>
+      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">The Port Region is the largest industrial submarket in Northern New Jersey — and the clearest illustration of why infill, shallow-bay space commands a premium closest to the port.</p>
+    </header>
 
-  <footer>
-    <p class="fp-caption">Port stats via Port Authority of NY &amp; NJ facility reports as covered by ROI-NJ, WorldCargo News and Breaking Waves (full-year 2025). Industrial vacancy and rent figures via CBRE and Savills Northern/Central NJ industrial reports (Q1–Q2 2026) and Cushman &amp; Wakefield / CommercialCafe national industrial benchmarks. Faropoint transaction detail via GlobeSt, Real Estate NJ, ConnectCRE, NJBIZ, Small Bay List and CompStak. This page was assembled from public reporting — the port-stats attachment referenced in the original request was not received by this session; replace the figures above if a primary dataset is available.</p>
-    <p class="fp-caption">Faropoint · Acquisitions Intelligence — Northeast · Prepared 2026-08-22</p>
-  </footer>
+    <section class="kpi-grid">
+      <div class="card">
+        <div class="fp-overline">Port Region inventory</div>
+        <div class="fp-kpi">84.1 msf</div>
+        <div class="fp-caption">Largest warehouse submarket in Northern NJ</div>
+      </div>
+      <div class="card">
+        <div class="fp-overline">H1 2026 leasing</div>
+        <div class="fp-kpi">1.9 msf</div>
+        <div class="delta">▲ +9.8% YoY</div>
+      </div>
+      <div class="card">
+        <div class="fp-overline">Vacancy rate</div>
+        <div class="fp-kpi">12.5%</div>
+        <div class="delta down">▲ +110 bps QoQ · new supply-driven</div>
+      </div>
+      <div class="card dark">
+        <div class="fp-overline">Port Region asking rent</div>
+        <div class="fp-kpi">$18.85/SF</div>
+        <div class="fp-caption">Highest in New Jersey — 13.0% above market</div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="two-col">
+        <div class="chart-card">
+          <div class="fp-body-heading" style="font-size:11px;">Asking rent hierarchy, Port Region vs. NJ</div>
+          <div class="bars" id="chart-rent"></div>
+          <div class="legend">
+            <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-1)"></span>Port Region · Class A</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-2)"></span>Port Region · overall</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-3)"></span>NJ market average</span>
+          </div>
+          <p class="fp-caption">NJ market average of ~$16.68/SF is derived from the stated 13.0% Port Region premium. Class A rent +7.1% YoY despite rising overall vacancy — modern, well-located space keeps pricing power.</p>
+        </div>
+        <div class="chart-card">
+          <div class="fp-body-heading" style="font-size:11px;">Notable H1 2026 leasing</div>
+          <div class="notable-list">
+            <div class="notable-item"><b>Ready Warehousing &amp; Logistics</b> — 92,000 SF new lease, 100 Lincoln Highway, Kearny</div>
+            <div class="notable-item"><b>iCube Global</b> — +78,142 SF expansion, 169 Pulaski St, Bayonne (adds to a 255,069 SF 2025 lease)</div>
+            <div class="notable-item"><b>HelloFresh</b> — 352,100 SF renewal, 60 Lister Ave, Newark</div>
+            <div class="notable-item">YTD renewal volume: <b>832,008 SF</b>, +24.5% YoY</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <h2 class="fp-section-heading" style="font-size:16px;">Why shallow bay is insulated from the supply wave</h2>
+      </div>
+      <div class="flow">
+        <div class="flow-card">
+          <div class="step"><span class="num">1</span><span class="fp-body-heading">Port scale holds</span></div>
+          <p>4.4M TEUs, #1 East Coast gateway, rising trucking costs push tenants to prioritize drayage-efficient, near-port locations.</p>
+        </div>
+        <div class="flow-card">
+          <div class="step"><span class="num">2</span><span class="fp-body-heading">Big-box supply overshoots</span></div>
+          <p>Nearly 1.0 msf of new vacant space (large-format deliveries) pushed Port Region vacancy up 110 bps to 12.5% in Q2.</p>
+        </div>
+        <div class="flow-card">
+          <div class="step"><span class="num">3</span><span class="fp-body-heading">Demand for space stays real</span></div>
+          <p>Leasing still up 9.8% YoY and Class A rent up 7.1% — the vacancy rise is a supply story, not a demand story.</p>
+        </div>
+        <div class="flow-card hero">
+          <div class="step"><span class="num">4</span><span class="fp-body-heading">Shallow bay can't be overbuilt</span></div>
+          <p>Small-bay product (&lt;100K SF) runs ~4.8% vacant nationally — infill land scarcity caps new supply where big-box cannot.</p>
+        </div>
+      </div>
+      <p class="fp-caption">Step 4 national small-bay vacancy benchmark: CBRE / Cushman &amp; Wakefield industrial research, distinct from the Port Region figures above (which blend all warehouse sizes).</p>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <h2 class="fp-section-heading" style="font-size:16px;">Faropoint's position on the ground</h2>
+      </div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-row"><span class="tl-amount">$328M</span><span class="tl-meta">Jul 2025 · NJ, GA, FL, TX, PA</span></div>
+          <div class="tl-desc">Acquired a 30-building, 1.8M SF shallow-bay portfolio from Mapletree.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-row"><span class="tl-amount">79,000 SF</span><span class="tl-meta">Rockaway &amp; Morris County, NJ</span></div>
+          <div class="tl-desc">Grew the Morris County shallow-bay footprint via a JLL-brokered acquisition from NJDG.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-row"><span class="tl-amount">~$17M</span><span class="tl-meta">Bergen County, NJ</span></div>
+          <div class="tl-desc">Joint-venture acquisition of roughly 73,000 SF of shallow-bay industrial space.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-row"><span class="tl-amount">$273M</span><span class="tl-meta">Jan 2026 · Portfolio financing</span></div>
+          <div class="tl-desc">Secured a refinance loan against the shallow-bay portfolio.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="page-footer">
+      <p class="fp-caption">Sources: Cushman &amp; Wakefield <i>H1 2026 Port of New York &amp; New Jersey Report</i>; CBRE / Cushman &amp; Wakefield national small-bay research; GlobeSt, Real Estate NJ, ConnectCRE, NJBIZ, Small Bay List, CompStak.</p>
+      <p class="fp-caption">2 of 2 · Faropoint</p>
+    </div>
+  </div>
 
 </div>
 
 <script>
-  function renderBars(containerId, rows, maxOverride) {
+  function renderBars(containerId, rows, max, compact) {
     var el = document.getElementById(containerId);
-    var max = maxOverride || Math.max.apply(null, rows.map(function(r){ return r.value; })) * 1.12;
     rows.forEach(function(r) {
       var pct = (r.value / max) * 100;
       var row = document.createElement('div');
-      row.className = 'bar-row';
-      row.title = r.name + ': ' + r.display;
+      row.className = 'bar-row' + (compact ? ' compact' : '') + (r.hero ? ' hero' : '');
       row.innerHTML =
-        '<div class="name">' + r.name + (r.sub ? '<span class="sub">' + r.sub + '</span>' : '') + '</div>' +
+        '<div class="name">' + r.name + '</div>' +
         '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%; background:' + r.color + '"></div></div>' +
-        '<div class="value">' + r.display + '</div>';
+        '<div class="value">' + r.display + (r.sub ? '<span class="sub">' + r.sub + '</span>' : '') + '</div>';
       el.appendChild(row);
     });
   }
 
-  renderBars('chart-vacancy', [
-    { name: 'Shallow bay / small bay', sub: 'Buildings under 100K SF', value: 4.8, display: '4.8%', color: 'var(--fp-viz-1)' },
-    { name: 'Northern & Central NJ', sub: 'All industrial formats, blended', value: 8.5, display: '~8.5%', color: 'var(--fp-viz-2)' },
-    { name: 'Large-format industrial', sub: 'Buildings over 500K SF', value: 8.1, display: '8.1%', color: 'var(--fp-viz-3)' },
-    { name: 'National industrial', sub: 'Buildings over 100K SF', value: 9.7, display: '9.7%', color: 'var(--fp-viz-3)' }
-  ], 11);
+  renderBars('chart-ports', [
+    { name: 'Los Angeles', value: 5.122603, display: '5.12M', sub: '21.0% share', color: 'var(--fp-viz-2)' },
+    { name: 'Long Beach', value: 4.829578, display: '4.83M', sub: '19.8% share', color: 'var(--fp-viz-2)' },
+    { name: 'New York/New Jersey', value: 4.427159, display: '4.43M', sub: '18.1% share', color: 'var(--fp-viz-1)', hero: true },
+    { name: 'Savannah', value: 2.837324, display: '2.84M', sub: '11.6% share', color: 'var(--fp-viz-3)' },
+    { name: 'Houston', value: 2.229473, display: '2.23M', sub: '9.1% share', color: 'var(--fp-viz-3)' },
+    { name: 'Virginia', value: 1.636588, display: '1.64M', sub: '6.7% share', color: 'var(--fp-viz-3)' }
+  ], 5.122603 * 1.05, true);
 
   renderBars('chart-rent', [
-    { name: 'Prime, port / turnpike-adjacent', sub: 'Cyclical baseline holding firm', value: 20.00, display: '~$20.00', color: 'var(--fp-viz-1)' },
-    { name: 'Meadowlands', sub: 'Port-proximate submarket', value: 16.01, display: '$16.01', color: 'var(--fp-viz-2)' },
-    { name: 'Port Newark–Elizabeth', sub: 'On-port submarket', value: 15.98, display: '$15.98', color: 'var(--fp-viz-3)' }
-  ], 22);
-
-  lucide.createIcons();
+    { name: 'Port Region · Class A', value: 21.69, display: '$21.69', sub: '+7.1% YoY', color: 'var(--fp-viz-1)', hero: true },
+    { name: 'Port Region · overall', value: 18.85, display: '$18.85', sub: '+13.0% vs. NJ', color: 'var(--fp-viz-2)' },
+    { name: 'NJ market average', value: 16.68, display: '~$16.68', sub: 'derived', color: 'var(--fp-viz-3)' }
+  ], 21.69 * 1.1, true);
 </script>
 </body>
 </html>
