@@ -126,7 +126,8 @@
 
   /* Corridor map (page 4) */
   .corridor-wrap { display:flex; justify-content:center; }
-  .corridor { position:relative; width:660px; height:372px; }
+  .corridor { position:relative; width:510px; height:360px; overflow:hidden; }
+  .corridor-inner { position:absolute; left:0; top:0; width:680px; height:480px; transform:scale(0.75); transform-origin:top left; }
   .corridor svg { position:absolute; left:0; top:0; width:100%; height:100%; }
   .corridor .c-card { position:absolute; background:#fff; border:1px solid var(--fp-border); border-radius:var(--fp-radius); box-shadow:var(--fp-shadow); padding:5px 9px; width:230px; }
   .corridor .c-card .c-title { font-size:10px; font-weight:700; color:var(--fp-fg2); }
@@ -433,13 +434,14 @@
 
     <section class="block">
       <div class="block-head">
-        <h2 class="fp-section-heading" style="font-size:16px;">The corridor, mapped: proximity to the port vs. market tightness</h2>
-        <p class="fp-body" style="color:var(--fp-fg3); font-size:10.5px;">Ordered by approximate driving distance from the Port of NY/NJ. The heat glow behind each market is its vacancy tier — hotter reads tighter. Distance and tightness don't move together: Long Island and Washington DC, at opposite ends of the corridor, are the two hottest markets.</p>
+        <h2 class="fp-section-heading" style="font-size:16px;">The corridor, mapped: how port flow reaches each market</h2>
+        <p class="fp-body" style="color:var(--fp-fg3); font-size:10.5px;">Positioned by approximate real geography, Long Island through Washington DC. The heat glow behind each market is its vacancy tier — hotter reads tighter. Geography and tightness don't move together: Long Island and DC, at opposite ends of the map, are the two hottest markets.</p>
       </div>
       <div class="chart-card">
         <div class="corridor-wrap">
           <div class="corridor">
-            <svg viewBox="0 0 660 372">
+          <div class="corridor-inner">
+            <svg viewBox="0 0 680 480">
               <defs>
                 <radialGradient id="heatHot" cx="50%" cy="50%" r="50%">
                   <stop offset="0%" stop-color="var(--fp-signal-orange)" stop-opacity="0.55"></stop>
@@ -454,62 +456,71 @@
                   <stop offset="100%" stop-color="var(--fp-blue-300)" stop-opacity="0"></stop>
                 </radialGradient>
               </defs>
-              <!-- spine -->
-              <line x1="60" y1="20" x2="60" y2="344" stroke="var(--fp-border)" stroke-width="2"></line>
 
-              <!-- heat glows -->
-              <circle cx="60" cy="74" r="40" fill="url(#heatMod)"></circle>
-              <circle cx="60" cy="128" r="46" fill="url(#heatHot)"></circle>
-              <circle cx="60" cy="182" r="40" fill="url(#heatMod)"></circle>
-              <circle cx="60" cy="236" r="36" fill="url(#heatCool)"></circle>
-              <circle cx="60" cy="290" r="40" fill="url(#heatMod)"></circle>
-              <circle cx="60" cy="344" r="46" fill="url(#heatHot)"></circle>
+              <!-- ocean -->
+              <rect x="0" y="0" width="680" height="480" fill="#eaf2f7"></rect>
+              <!-- land (illustrative coastline, not to scale) -->
+              <path d="M 0,0 L 630,0 C 600,60 560,110 520,150 C 470,200 430,250 400,300 C 370,350 340,390 310,480 L 0,480 Z" fill="var(--fp-bg-page)"></path>
 
-              <!-- nodes on spine -->
-              <circle cx="60" cy="20" r="6" fill="var(--fp-blue-800)"></circle>
-              <circle cx="60" cy="74" r="6" fill="var(--fp-orange-400)"></circle>
-              <circle cx="60" cy="128" r="6" fill="var(--fp-signal-orange)"></circle>
-              <circle cx="60" cy="182" r="6" fill="var(--fp-orange-400)"></circle>
-              <circle cx="60" cy="236" r="6" fill="var(--fp-blue-300)"></circle>
-              <circle cx="60" cy="290" r="6" fill="var(--fp-orange-400)"></circle>
-              <circle cx="60" cy="344" r="6" fill="var(--fp-signal-orange)"></circle>
+              <!-- route line: port/NNJ down through the corridor -->
+              <path d="M 380,40 L 380,100 M 380,70 L 340,175 L 290,260 L 260,350 L 230,430" fill="none" stroke="var(--fp-blue-300)" stroke-width="2.5" stroke-dasharray="1,0"></path>
+              <!-- branch to Long Island -->
+              <line x1="380" y1="40" x2="520" y2="40" stroke="var(--fp-blue-300)" stroke-width="2.5"></line>
+
+              <!-- heat glows (markets only, not the port) -->
+              <circle cx="380" cy="100" r="42" fill="url(#heatMod)"></circle>
+              <circle cx="520" cy="40" r="46" fill="url(#heatHot)"></circle>
+              <circle cx="340" cy="175" r="42" fill="url(#heatMod)"></circle>
+              <circle cx="290" cy="260" r="38" fill="url(#heatCool)"></circle>
+              <circle cx="260" cy="350" r="42" fill="url(#heatMod)"></circle>
+              <circle cx="230" cy="430" r="46" fill="url(#heatHot)"></circle>
+
+              <!-- node dots -->
+              <circle cx="380" cy="40" r="7" fill="var(--fp-blue-800)"></circle>
+              <circle cx="380" cy="100" r="6" fill="var(--fp-orange-400)"></circle>
+              <circle cx="520" cy="40" r="6" fill="var(--fp-signal-orange)"></circle>
+              <circle cx="340" cy="175" r="6" fill="var(--fp-orange-400)"></circle>
+              <circle cx="290" cy="260" r="6" fill="var(--fp-blue-300)"></circle>
+              <circle cx="260" cy="350" r="6" fill="var(--fp-orange-400)"></circle>
+              <circle cx="230" cy="430" r="6" fill="var(--fp-signal-orange)"></circle>
             </svg>
 
-            <div class="c-card" style="left:96px; top:2px;">
+            <div class="c-card" style="left:154px; top:18px; width:210px;">
               <div class="c-title">Port of NY/NJ</div>
-              <div class="c-meta">Mile 0 · origin</div>
+              <div class="c-meta">Origin · #1 East Coast gateway</div>
               <div class="c-stat">8.9M TEU 2025</div>
             </div>
-            <div class="c-card" style="left:96px; top:54px;">
+            <div class="c-card" style="left:154px; top:78px; width:210px;">
               <div class="c-title">Northern NJ</div>
-              <div class="c-meta">~10 mi</div>
+              <div class="c-meta">~10 mi from port</div>
               <div class="c-stat">90.7% occupied · 9.3% vacant</div>
             </div>
-            <div class="c-card tight" style="left:96px; top:108px;">
+            <div class="c-card tight" style="left:536px; top:18px; width:140px;">
               <div class="c-title">Long Island</div>
               <div class="c-meta">~30 mi</div>
-              <div class="c-stat">93.0% occupied · 7.0% vacant</div>
+              <div class="c-stat">93.0% occ. · 7.0% vac.</div>
             </div>
-            <div class="c-card" style="left:96px; top:162px;">
+            <div class="c-card" style="left:114px; top:153px; width:210px;">
               <div class="c-title">Central NJ</div>
-              <div class="c-meta">~35 mi</div>
+              <div class="c-meta">~35 mi from port</div>
               <div class="c-stat">90.7% occupied · 9.3% vacant</div>
             </div>
-            <div class="c-card elevated" style="left:96px; top:216px;">
+            <div class="c-card elevated" style="left:84px; top:238px; width:190px;">
               <div class="c-title">Philadelphia</div>
-              <div class="c-meta">~95 mi</div>
+              <div class="c-meta">~95 mi from port</div>
               <div class="c-stat">89.7% occupied · 10.3% vacant</div>
             </div>
-            <div class="c-card" style="left:96px; top:270px;">
+            <div class="c-card" style="left:54px; top:328px; width:190px;">
               <div class="c-title">Baltimore</div>
-              <div class="c-meta">~170 mi</div>
+              <div class="c-meta">~170 mi from port</div>
               <div class="c-stat">91.5% occupied · 8.5% vacant</div>
             </div>
-            <div class="c-card tight" style="left:96px; top:324px;">
+            <div class="c-card tight" style="left:24px; top:408px; width:190px;">
               <div class="c-title">Washington DC metro</div>
-              <div class="c-meta">~225 mi</div>
+              <div class="c-meta">~225 mi from port</div>
               <div class="c-stat">92.6% occupied · 7.4% vacant</div>
             </div>
+          </div>
           </div>
         </div>
         <div class="legend">
@@ -518,7 +529,7 @@
           <span class="legend-item"><span class="legend-dot" style="background:var(--fp-orange-400)"></span>Moderate, 8–9.5%</span>
           <span class="legend-item"><span class="legend-dot" style="background:var(--fp-blue-300)"></span>Elevated, &gt;9.5%</span>
         </div>
-        <p class="fp-caption">Schematic corridor map — node order reflects approximate driving distance from the Port of NY/NJ; spacing is not to scale. Vacancy figures per market table on page 3. Faropoint's shallow-bay footprint spans this full corridor, not just the Port Region.</p>
+        <p class="fp-caption">Illustrative regional map — node positions and coastline are schematic approximations of real geography, not to scale. Vacancy figures per market table on page 3. Faropoint's shallow-bay footprint spans this full corridor, not just the Port Region.</p>
       </div>
     </section>
 
