@@ -10,10 +10,10 @@
   * { box-sizing: border-box; }
   body { margin:0; background:#dfe2e6; color:var(--fp-fg1); font-family:var(--fp-font-body); }
   .doc { display:flex; flex-direction:column; align-items:center; gap:28px; padding:28px 0 48px; }
-  .page { width:8.5in; height:11in; background:#fff; box-shadow:var(--fp-shadow-lg); padding:0.42in 0.55in 0.4in; display:flex; flex-direction:column; gap:9px; position:relative; overflow:hidden; }
+  .page { width:8.5in; height:11in; background:#fff; box-shadow:var(--fp-shadow-lg); padding:0.4in 0.55in 0.38in; display:flex; flex-direction:column; gap:7px; position:relative; overflow:hidden; }
 
   /* Page chrome */
-  .doc-header { display:flex; align-items:center; justify-content:space-between; padding-bottom:10px; border-bottom:2px solid var(--fp-blue-800); }
+  .doc-header { display:flex; align-items:center; justify-content:space-between; padding-bottom:7px; border-bottom:2px solid var(--fp-blue-800); }
   .doc-header img { height:20px; }
   .doc-header .meta { text-align:right; }
   .page-footer { position:absolute; left:0.55in; right:0.55in; bottom:0.32in; display:flex; justify-content:space-between; align-items:flex-end; border-top:1px solid var(--fp-divider); padding-top:8px; }
@@ -34,11 +34,11 @@
   .delta.flat { color:var(--fp-fg4); }
   .delta.down { color:var(--fp-alert); }
 
-  section.block { display:flex; flex-direction:column; gap:6px; }
+  section.block { display:flex; flex-direction:column; gap:4px; }
   .block-head { display:flex; flex-direction:column; gap:2px; }
 
   /* Chart card */
-  .chart-card { background:var(--fp-bg-card); border:1px solid var(--fp-border); border-radius:var(--fp-radius-lg); box-shadow:var(--fp-shadow); padding:11px 13px; display:flex; flex-direction:column; gap:7px; }
+  .chart-card { background:var(--fp-bg-card); border:1px solid var(--fp-border); border-radius:var(--fp-radius-lg); box-shadow:var(--fp-shadow); padding:9px 12px; display:flex; flex-direction:column; gap:5px; }
   .bars { display:flex; flex-direction:column; gap:5px; }
   .bar-row { display:grid; grid-template-columns:118px 1fr 108px; align-items:center; gap:10px; }
   .bar-row.compact { grid-template-columns:150px 1fr 74px; }
@@ -53,8 +53,8 @@
   .legend-dot { width:9px; height:9px; border-radius:3px; flex-shrink:0; }
 
   table.data-table { width:100%; border-collapse:collapse; font-size:10px; }
-  table.data-table caption { text-align:left; font-size:9.5px; color:var(--fp-fg4); margin-bottom:6px; }
-  table.data-table th, table.data-table td { text-align:right; padding:5px 8px; border-bottom:1px solid var(--fp-divider); }
+  table.data-table caption { text-align:left; font-size:9.5px; color:var(--fp-fg4); margin-bottom:4px; }
+  table.data-table th, table.data-table td { text-align:right; padding:4px 7px; border-bottom:1px solid var(--fp-divider); }
   table.data-table th:first-child, table.data-table td:first-child { text-align:left; }
   table.data-table th { font-size:9px; color:var(--fp-fg4); font-weight:700; text-transform:uppercase; letter-spacing:0.3px; }
   table.data-table tr.hero td { font-weight:700; color:var(--fp-fg2); background:var(--fp-orange-100); }
@@ -114,10 +114,10 @@
 
   /* Placeholder cards (pending data) */
   .placeholder-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
-  .placeholder-card { border:1.5px dashed var(--fp-border); border-radius:var(--fp-radius-lg); padding:9px 8px; text-align:center; background:repeating-linear-gradient(135deg, rgba(93,102,115,0.03) 0 6px, transparent 6px 12px); }
+  .placeholder-card { border:1.5px dashed var(--fp-border); border-radius:var(--fp-radius-lg); padding:7px 8px; text-align:center; background:repeating-linear-gradient(135deg, rgba(93,102,115,0.03) 0 6px, transparent 6px 12px); }
   .placeholder-card .fp-overline { font-size:8px; }
   .placeholder-card .ph-value { font-size:15px; font-weight:700; color:var(--fp-fg4); margin-top:3px; }
-  .placeholder-note { background:#fdf2e9; border-left:3px solid var(--fp-signal-orange); border-radius:0 var(--fp-radius) var(--fp-radius) 0; padding:8px 11px; font-size:9.5px; color:var(--fp-fg1); }
+  .placeholder-note { background:#fdf2e9; border-left:3px solid var(--fp-signal-orange); border-radius:0 var(--fp-radius) var(--fp-radius) 0; padding:6px 11px; font-size:9.5px; color:var(--fp-fg1); }
 
   /* Region badges */
   .region-tag { font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; padding:1px 6px; border-radius:var(--fp-radius-pill); }
@@ -293,33 +293,28 @@
 
     <section class="block">
       <div class="block-head">
-        <h2 class="fp-section-heading" style="font-size:16px;">Why rent growth concentrates in 20,000–100,000 SF buildings</h2>
-        <p class="fp-body" style="color:var(--fp-fg3); font-size:10.5px;">Bulk space over 50K SF actually posted the fastest rent growth since 2019 — then the supply it attracted pushed its rents into decline. Shallow-bay space grew more moderately and is still positive, because the same construction economics that limit its supply also limit how far its rents can fall.</p>
+        <h2 class="fp-section-heading" style="font-size:16px;">The house view: Northern New Jersey</h2>
+        <p class="fp-body" style="color:var(--fp-fg3); font-size:10.5px;">Faropoint's research team rates Northern New Jersey <b>Over-weight</b> among Gateway markets — near-term rent softness more than compensated by the widest Treasury spread in the set.</p>
       </div>
       <div class="chart-card">
-        <div class="fp-body-heading" style="font-size:11px;">Asking rent CAGR since 2019, by lease size band</div>
-        <div class="bars" id="chart-cagr"></div>
-        <p class="fp-caption">"Now" = current annual asking-rent change per CoStar, Q1 2026 — shown to make the point that cumulative growth and current direction have diverged. Source: CoStar, <i>U.S. industrial asking rent growth has moderated across lease size ranges</i>.</p>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div class="fp-body-heading" style="font-size:11px;">Northern New Jersey · Gateway market</div>
+          <span style="background:var(--fp-go); color:#fff; font-size:9px; font-weight:700; padding:2px 9px; border-radius:var(--fp-radius-pill); text-transform:uppercase; letter-spacing:0.3px;">Over-weight</span>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-stat"><div class="mini-num">$1.57B</div><div class="mini-label">FarOS H1 2026 volume seen, 141 deals (-4.7% QoQ)</div></div>
+          <div class="mini-stat"><div class="mini-num">6.3% / 7.2%</div><div class="mini-label">In-place / untrended cap rate, 20–100K SF</div></div>
+          <div class="mini-stat"><div class="mini-num">+185 bps</div><div class="mini-label">Treasury spread — widest of Faropoint's three Gateway markets</div></div>
+          <div class="mini-stat"><div class="mini-num">5.9%</div><div class="mini-label">Vacancy, 20–100K SF (+23 bps QoQ)</div></div>
+          <div class="mini-stat"><div class="mini-num">-2.3%</div><div class="mini-label">LTM rent growth — the near-term softness being priced</div></div>
+          <div class="mini-stat"><div class="mini-num">+2.62%</div><div class="mini-label">Expected 2-yr rent growth (2026–27) — the recovery being underwritten</div></div>
+        </div>
+        <p class="fp-caption">"FarOS volume seen" reflects deal flow tracked by Faropoint's sourcing platform across the market, not Faropoint's own closings. Source: Faropoint Research, <i>Market Pulse H1 2026</i>, House View — Gateway Markets.</p>
       </div>
-      <div class="mini-stats">
-        <div class="mini-stat">
-          <div class="mini-num">4.2% <span style="font-size:10px; font-weight:400; color:var(--fp-fg4);">vs. 7.5%</span></div>
-          <div class="mini-label">Small-bay (&lt;50K SF) vacancy vs. industrial overall — CoStar, Q1 2026</div>
-        </div>
-        <div class="mini-stat">
-          <div class="mini-num">&lt;2% <span style="font-size:10px; font-weight:400; color:var(--fp-fg4);">of 29–36%</span></div>
-          <div class="mini-label">Share of construction pipeline vs. share of existing inventory</div>
-        </div>
-        <div class="mini-stat">
-          <div class="mini-num">$160–220<span style="font-size:10px; font-weight:400; color:var(--fp-fg4);">/SF</span></div>
-          <div class="mini-label">Development cost — doesn't pencil below ~75,000 SF, capping new small-bay supply</div>
-        </div>
-      </div>
-      <p class="fp-caption">Small-bay demand grew ~20% over the past decade while supply grew just 3% (CoStar) — the structural gap behind both the historical rent gain and its current resilience.</p>
     </section>
 
     <div class="page-footer">
-      <p class="fp-caption">Sources: Cushman &amp; Wakefield <i>H1 2026 Port of New York &amp; New Jersey Report</i>; CoStar, <i>U.S. industrial asking rent growth has moderated across lease size ranges</i> (Q1 2026); CBRE small-bay research.</p>
+      <p class="fp-caption">Sources: Cushman &amp; Wakefield <i>H1 2026 Port of New York &amp; New Jersey Report</i>; Faropoint Research, <i>Market Pulse H1 2026</i> (internal, FarOS + CoStar).</p>
       <p class="fp-caption">2 of 4 · Faropoint</p>
     </div>
   </div>
@@ -335,55 +330,59 @@
     </div>
 
     <header>
-      <h1 class="fp-headline doc-size"><span class="fp-headline-section">Beyond the Port Region</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">The thesis holds across the corridor</span></h1>
-      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">Occupancy strength isn't unique to Northern New Jersey — it holds in a tight band from Long Island through the Mid-Atlantic, the same corridor where Faropoint has been deploying capital across Funds II–IV and ISLB.</p>
+      <h1 class="fp-headline doc-size"><span class="fp-headline-section">Beyond the Port Region</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">Faropoint's Northeast house view</span></h1>
+      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">Northern New Jersey and Philadelphia are Faropoint's two most active Northeast/Mid-Atlantic markets — one rated Over-weight, one Under-weight, for very different reasons.</p>
     </header>
 
     <section class="block">
       <div class="block-head">
-        <h2 class="fp-section-heading" style="font-size:16px;">Occupancy across the corridor</h2>
-        <p class="fp-body" style="color:var(--fp-fg3); font-size:10.5px;">Six markets, one narrow band: 89.7%–93.0% occupied. Long Island and Washington DC currently run tighter than the Port Region submarkets; Philadelphia is the loosest of the six — still a healthy market, not a weak one.</p>
+        <h2 class="fp-section-heading" style="font-size:16px;">Gateway vs. Value: two markets, two theses</h2>
+        <p class="fp-body" style="color:var(--fp-fg3); font-size:10.5px;">Northern New Jersey (Gateway) is Over-weight on pricing despite softer rents. Philadelphia (Value) is Under-weight despite the stronger rent print — its leasing spreads compressed sharply as outsized COVID-era gains normalize.</p>
       </div>
       <div class="chart-card">
-        <div class="fp-body-heading" style="font-size:11px;">Industrial occupancy by market</div>
-        <div class="bars" id="chart-occupancy"></div>
-        <div class="legend">
-          <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-1)"></span>Northeast (Long Island, Northern &amp; Central NJ)</span>
-          <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-3)"></span>Mid-Atlantic (Philadelphia, Baltimore, DC)</span>
-        </div>
         <table class="data-table">
-          <caption>Industrial occupancy (100% − vacancy) by market, most recent available quarter</caption>
-          <thead><tr><th>Market</th><th>Occupancy</th><th>Vacancy</th><th>Period</th><th>Source</th></tr></thead>
+          <caption>Faropoint House View — Northeast &amp; Mid-Atlantic markets, H1 2026 (20–100K SF)</caption>
+          <thead><tr><th>Market</th><th>FarOS deals</th><th>FarOS volume</th><th>In-place CR</th><th>Untrended CR</th><th>TSY spread</th><th>Vacancy</th><th>LTM rent gr.</th><th>Exp. 2-yr gr.</th><th>House view</th></tr></thead>
           <tbody>
-            <tr><td>Long Island</td><td>93.0%</td><td>7.0%</td><td>Q2 2026</td><td>CBRE</td></tr>
-            <tr><td>Washington DC metro</td><td>92.6%</td><td>7.4%</td><td>Q1 2026</td><td>Newmark</td></tr>
-            <tr><td>Baltimore</td><td>91.5%</td><td>8.5%</td><td>Q2 2026</td><td>CBRE</td></tr>
-            <tr><td>Northern NJ</td><td>90.7%</td><td>9.3%</td><td>H1 2026</td><td>Cushman &amp; Wakefield</td></tr>
-            <tr><td>Central NJ</td><td>90.7%</td><td>9.3%</td><td>Q2 2026</td><td>Cushman &amp; Wakefield</td></tr>
-            <tr><td>Philadelphia</td><td>89.7%</td><td>10.3%</td><td>Q2 2026</td><td>CBRE</td></tr>
+            <tr class="hero"><td>Northern New Jersey</td><td>141</td><td>$1,573M</td><td>6.3%</td><td>7.2%</td><td>+185 bps</td><td>5.9%</td><td>−2.3%</td><td>+2.62%</td><td style="color:var(--fp-go); font-weight:700;">Over-weight</td></tr>
+            <tr><td>Philadelphia</td><td>90</td><td>$721M</td><td>6.2%</td><td>7.4%</td><td>+182 bps</td><td>4.6%</td><td>+7.8%</td><td>+2.88%</td><td style="color:var(--fp-alert); font-weight:700;">Under-weight</td></tr>
           </tbody>
         </table>
+        <p class="fp-caption">Gateway classification (New Jersey) reflects high-density coastal hubs with major port/airport/rail infrastructure and supply-constrained inventory; Value classification (Philadelphia) reflects an established logistics center with a mature base and affordable positioning relative to coastal markets. Source: Faropoint Research, <i>Market Pulse H1 2026</i>, House View — Gateway &amp; Value Markets.</p>
       </div>
     </section>
 
     <section class="block">
       <div class="block-head">
-        <h2 class="fp-section-heading" style="font-size:16px;">Faropoint's Northeast &amp; Mid-Atlantic deployment</h2>
+        <h2 class="fp-section-heading" style="font-size:16px;">Why both markets still pencil: the urban logistics yield premium</h2>
+        <p class="fp-body" style="color:var(--fp-fg3); font-size:10.5px;">FarOS pricing shows shallow-bay consistently transacting at a wider yield than big-box, in both markets above.</p>
       </div>
-      <div class="placeholder-grid">
-        <div class="placeholder-card"><div class="fp-overline">Total deployed</div><div class="ph-value">—</div></div>
-        <div class="placeholder-card"><div class="fp-overline">Transactions</div><div class="ph-value">—</div></div>
-        <div class="placeholder-card"><div class="fp-overline">Buildings acquired</div><div class="ph-value">—</div></div>
-        <div class="placeholder-card"><div class="fp-overline">Avg. deal size</div><div class="ph-value">—</div></div>
-        <div class="placeholder-card"><div class="fp-overline">Avg. building size</div><div class="ph-value">—</div></div>
-      </div>
-      <div class="placeholder-note">
-        <b>Pending confirmation.</b> No connected data source in this session holds transaction-level acquisition totals for Funds II–IV and ISLB across the Northeast/Mid-Atlantic — monday.com returned no matching board, and NetSuite is available as a connector but not enabled in this chat. Populate this row from Corporate Finance / FarOS before circulating to LPAC.
+      <div class="chart-card">
+        <div class="fp-body-heading" style="font-size:11px;">Cap rates by asset size, H1 2026</div>
+        <div class="bars" id="chart-caprate"></div>
+        <p class="fp-caption">Urban logistics (20–100K SF) carries in-place yields of 6.0% and untrended yields of 7.1% — about 70 bps above big-box (200K+) in-place yields of 5.3%. Source: Faropoint Research, <i>Market Pulse H1 2026</i> (FarOS pipeline, price-weighted trailing averages).</p>
       </div>
     </section>
 
+    <section class="block">
+      <div class="block-head">
+        <h2 class="fp-section-heading" style="font-size:16px;">Faropoint's New Jersey acquisition footprint, 2026 YTD</h2>
+      </div>
+      <div class="placeholder-grid">
+        <div class="placeholder-card" style="border-style:solid; background:var(--fp-bg-page);"><div class="fp-overline">Total deployed</div><div class="ph-value" style="color:var(--fp-fg2);">$65.5M</div></div>
+        <div class="placeholder-card" style="border-style:solid; background:var(--fp-bg-page);"><div class="fp-overline">Transactions</div><div class="ph-value" style="color:var(--fp-fg2);">5</div></div>
+        <div class="placeholder-card" style="border-style:solid; background:var(--fp-bg-page);"><div class="fp-overline">Buildings acquired</div><div class="ph-value" style="color:var(--fp-fg2);">5</div></div>
+        <div class="placeholder-card" style="border-style:solid; background:var(--fp-bg-page);"><div class="fp-overline">Avg. deal size</div><div class="ph-value" style="color:var(--fp-fg2);">$13.1M</div></div>
+        <div class="placeholder-card" style="border-style:solid; background:var(--fp-bg-page);"><div class="fp-overline">Avg. building size</div><div class="ph-value" style="color:var(--fp-fg2);">~60,000 SF</div></div>
+      </div>
+      <div class="placeholder-note" style="background:var(--fp-orange-100);">
+        <b>No. 1 buyer in the market by deal count.</b> Across 51 tracked NJ industrial, land and IOS transactions in 2026 YTD, Faropoint led every buyer — disclosed or confidential — with 5 deals (9.8% of all deals; 19.2% of the 26 industrial-sale-only transactions). By dollar volume Faropoint ranks #11 ($65.5M, 3.2% share), well behind one-off trophy deals like Goodman's $360.0M Anheuser-Busch land acquisition — consistent with a high-frequency, smaller-check acquisition strategy rather than one built around headline-volume deals.
+      </div>
+      <p class="fp-caption">NJ industrial only — Fund-level and other Mid-Atlantic totals unavailable this session.</p>
+    </section>
+
     <div class="page-footer">
-      <p class="fp-caption">Sources: CBRE Long Island, Baltimore &amp; Philadelphia industrial figures (Q2 2026); Newmark Washington DC metro (Q1 2026); Cushman &amp; Wakefield Northern/Central NJ (H1/Q2 2026).</p>
+      <p class="fp-caption">Sources: Faropoint Research, <i>Market Pulse H1 2026</i> (internal); Cushman &amp; Wakefield Northeast Industrial Advisory Group, NJ sales data 2026 YTD, analysis prepared by Faropoint Acquisitions.</p>
       <p class="fp-caption">3 of 4 · Faropoint</p>
     </div>
   </div>
@@ -411,7 +410,7 @@
         </div>
         <div class="flow-card">
           <div class="step"><span class="num">2</span><span class="fp-body-heading">Land that can't be replaced</span></div>
-          <p>Zoning, entitlement and land cost in built-out metros make new shallow-bay supply structurally scarce. National vacancy for buildings under 100K SF: ~4.8%.</p>
+          <p>Under-construction inventory is ~4x higher in big box (2.6% of stock) than last-mile (0.6%) — zoning and land cost structurally cap new shallow-bay supply (Faropoint Research).</p>
         </div>
         <div class="flow-card">
           <div class="step"><span class="num">3</span><span class="fp-body-heading">Granular, diversified tenancy</span></div>
@@ -423,7 +422,7 @@
         </div>
         <div class="flow-card">
           <div class="step"><span class="num">5</span><span class="fp-body-heading">Fragmented ownership, our entry point</span></div>
-          <p>Most shallow-bay stock is owned by private, often unlevered individual owners — a durable acquisition pipeline with limited institutional competition.</p>
+          <p>79% of the 20–100K SF universe ($1.1T sector, avg. asset value $5M) is privately owned — a durable, largely un-institutionalized acquisition pipeline (Faropoint Research).</p>
         </div>
         <div class="flow-card hero">
           <div class="step"><span class="num">6</span><span class="fp-body-heading">Demand from more than one source</span></div>
@@ -529,7 +528,7 @@
           <span class="legend-item"><span class="legend-dot" style="background:var(--fp-orange-400)"></span>Moderate, 8–9.5%</span>
           <span class="legend-item"><span class="legend-dot" style="background:var(--fp-blue-300)"></span>Elevated, &gt;9.5%</span>
         </div>
-        <p class="fp-caption">Illustrative regional map — node positions and coastline are schematic approximations of real geography, not to scale. Vacancy figures per market table on page 3. Faropoint's shallow-bay footprint spans this full corridor, not just the Port Region.</p>
+        <p class="fp-caption">Illustrative regional map — node positions and coastline are schematic approximations of real geography, not to scale. Vacancy shown is all-industrial-size market vacancy (CBRE/Newmark/Cushman &amp; Wakefield, see page 1–2 sourcing); Faropoint's own 20–100K SF segment runs tighter still in its covered markets — 5.9% in Northern NJ and 4.6% in Philadelphia (page 3). Faropoint's shallow-bay footprint spans this full corridor, not just the Port Region.</p>
       </div>
     </section>
 
@@ -572,20 +571,11 @@
     { name: 'NJ market average', value: 16.68, display: '~$16.68', sub: 'derived', color: 'var(--fp-viz-3)' }
   ], 21.69 * 1.1, true);
 
-  renderBars('chart-cagr', [
-    { name: 'Under 25,000 SF', value: 5.5, display: '+5.5%', sub: 'CAGR since 2019', color: 'var(--fp-viz-1)', trend: { cls: 'go', text: 'Now: <+1% ▲' } },
-    { name: '25,000–50,000 SF', value: 6.8, display: '+6.8%', sub: 'CAGR since 2019', color: 'var(--fp-viz-1)', trend: { cls: 'flat', text: 'Now: ~flat' } },
-    { name: '50,000 SF and up', value: 8.8, display: '+8.8%', sub: 'CAGR since 2019', color: 'var(--fp-viz-3)', trend: { cls: 'alert', text: 'Now: −2.7% ▼' } }
-  ], 8.8 * 1.15, true);
-
-  renderBars('chart-occupancy', [
-    { name: 'Long Island', value: 93.0, display: '93.0%', sub: '7.0% vacant', color: 'var(--fp-viz-1)', hero: true },
-    { name: 'Washington DC metro', value: 92.6, display: '92.6%', sub: '7.4% vacant', color: 'var(--fp-viz-3)' },
-    { name: 'Baltimore', value: 91.5, display: '91.5%', sub: '8.5% vacant', color: 'var(--fp-viz-3)' },
-    { name: 'Northern NJ', value: 90.7, display: '90.7%', sub: '9.3% vacant', color: 'var(--fp-viz-1)' },
-    { name: 'Central NJ', value: 90.7, display: '90.7%', sub: '9.3% vacant', color: 'var(--fp-viz-1)' },
-    { name: 'Philadelphia', value: 89.7, display: '89.7%', sub: '10.3% vacant', color: 'var(--fp-viz-3)' }
-  ], 93.0 * 1.03, true);
+  renderBars('chart-caprate', [
+    { name: 'Urban logistics · untrended', value: 7.1, display: '7.1%', sub: '20–100K SF', color: 'var(--fp-viz-1)' },
+    { name: 'Urban logistics · in-place', value: 6.0, display: '6.0%', sub: '20–100K SF', color: 'var(--fp-viz-1)', hero: true },
+    { name: 'Big box · in-place', value: 5.3, display: '5.3%', sub: '200K+ SF', color: 'var(--fp-viz-3)' }
+  ], 7.1 * 1.15, true);
 </script>
 </body>
 </html>
