@@ -669,7 +669,7 @@
 
     <header>
       <h1 class="fp-headline doc-size"><span class="fp-headline-section">Distribution channels</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">How goods reach their end use, regionally</span></h1>
-      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">Port volume doesn't arrive at one destination — it splits by mode, moves through bulk distribution, then fans out to four distinct end-use channels that all compete for the same shallow-bay space.</p>
+      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">Port volume doesn't arrive at one destination — it splits by mode, moves through bulk distribution, then fans out to five distinct end-use channels that all compete for the same shallow-bay space.</p>
     </header>
 
     <section class="block">
@@ -698,19 +698,21 @@
               <path d="M350,198 V226" marker-end="url(#flowArrow)"/>
 
               <path d="M350,274 V308"/>
-              <path d="M90,308 H610"/>
-              <path d="M90,308 V342" marker-end="url(#flowArrow)"/>
-              <path d="M280,308 V342" marker-end="url(#flowArrow)"/>
-              <path d="M420,308 V342" marker-end="url(#flowArrow)"/>
-              <path d="M610,308 V342" marker-end="url(#flowArrow)"/>
+              <path d="M70,308 H630"/>
+              <path d="M70,308 V342" marker-end="url(#flowArrow)"/>
+              <path d="M210,308 V342" marker-end="url(#flowArrow)"/>
+              <path d="M350,308 V342" marker-end="url(#flowArrow)"/>
+              <path d="M490,308 V342" marker-end="url(#flowArrow)"/>
+              <path d="M630,308 V342" marker-end="url(#flowArrow)"/>
             </g>
 
-            <!-- four channels, four colors, converging into one orange trunk -->
+            <!-- five channels, five colors, converging into one orange trunk -->
             <g fill="none" stroke-width="2.75" stroke-linejoin="round" stroke-linecap="round">
-              <path d="M90,378 V404 H348" stroke="var(--fp-viz-4)"/>
-              <path d="M280,378 V404 H348" stroke="var(--fp-viz-5)"/>
-              <path d="M420,378 V404 H352" stroke="var(--fp-viz-7)"/>
-              <path d="M610,378 V404 H352" stroke="var(--fp-viz-6)"/>
+              <path d="M70,378 V404 H348" stroke="var(--fp-viz-4)"/>
+              <path d="M210,378 V404 H348" stroke="var(--fp-viz-5)"/>
+              <path d="M350,378 V404" stroke="var(--fp-viz-8)"/>
+              <path d="M490,378 V404 H352" stroke="var(--fp-viz-7)"/>
+              <path d="M630,378 V404 H352" stroke="var(--fp-viz-6)"/>
             </g>
             <path d="M350,404 V430" fill="none" stroke="var(--fp-signal-orange)" stroke-width="3.5" stroke-linecap="round" marker-end="url(#flowArrowOrange)"/>
 
@@ -764,46 +766,57 @@
             <text x="350" y="290" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="var(--fp-fg2)">Regional bulk distribution</text>
             <text x="350" y="303" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="var(--fp-fg4)">Cross-dock, big-box 200K+ SF</text>
 
-            <!-- E-commerce & last-mile -->
-            <circle cx="90" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-4)" stroke-width="2.5"/>
-            <g transform="translate(80,350)" stroke="var(--fp-viz-4)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <!-- E-commerce fulfillment -->
+            <circle cx="70" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-4)" stroke-width="2.5"/>
+            <g transform="translate(60,350)" stroke="var(--fp-viz-4)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <path d="M2.5 6.5L12 2.5l9.5 4-9.5 4-9.5-4z"/>
               <path d="M2.5 6.5v9.5l9.5 4 9.5-4V6.5"/>
               <path d="M12 10.5v9.5"/>
             </g>
-            <rect x="35" y="378" width="110" height="28" rx="5" fill="#fff" fill-opacity="0.9"/>
-            <text x="90" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">E-commerce</text>
-            <text x="90" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">&amp; last-mile</text>
+            <rect x="15" y="378" width="110" height="28" rx="5" fill="#fff" fill-opacity="0.9"/>
+            <text x="70" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">E-commerce</text>
+            <text x="70" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">fulfillment</text>
 
             <!-- Wholesale & 3PL -->
-            <circle cx="280" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-5)" stroke-width="2.5"/>
-            <g transform="translate(270,350)" stroke="var(--fp-viz-5)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="210" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-5)" stroke-width="2.5"/>
+            <g transform="translate(200,350)" stroke="var(--fp-viz-5)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="8.5" width="14.5" height="3"/>
               <rect x="3" y="13.5" width="14.5" height="3"/>
               <path d="M5 8.5V5.5h10.5v3"/>
             </g>
-            <rect x="225" y="378" width="110" height="28" rx="5" fill="#fff" fill-opacity="0.9"/>
-            <text x="280" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">Wholesale</text>
-            <text x="280" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">&amp; 3PL</text>
+            <rect x="155" y="378" width="110" height="28" rx="5" fill="#fff" fill-opacity="0.9"/>
+            <text x="210" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">Wholesale</text>
+            <text x="210" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">&amp; 3PL</text>
+
+            <!-- Last-mile logistics -->
+            <circle cx="350" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-8)" stroke-width="2.5"/>
+            <g transform="translate(338,348)" stroke="var(--fp-viz-8)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20.5C12 20.5 18.5 13.8 18.5 9.5C18.5 5.9 15.6 3 12 3C8.4 3 5.5 5.9 5.5 9.5C5.5 13.8 12 20.5 12 20.5Z"/>
+              <rect x="9.2" y="7" width="5.6" height="4.6" rx="0.6"/>
+              <path d="M9.2 9.3h5.6"/>
+            </g>
+            <rect x="290" y="378" width="120" height="28" rx="5" fill="#fff" fill-opacity="0.9"/>
+            <text x="350" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">Last-mile logistics</text>
+            <text x="350" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">final-mile parcel depots</text>
 
             <!-- Light manufacturing & assembly -->
-            <circle cx="420" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-7)" stroke-width="2.5"/>
-            <g transform="translate(410,350)" stroke="var(--fp-viz-7)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="490" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-7)" stroke-width="2.5"/>
+            <g transform="translate(480,350)" stroke="var(--fp-viz-7)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3.4"/>
               <path d="M12 4.5v2.5M12 17v2.5M4.5 12h2.5M17 12h2.5M6.8 6.8l1.8 1.8M15.4 15.4l1.8 1.8M17.2 6.8l-1.8 1.8M8.6 15.4l-1.8 1.8"/>
             </g>
-            <rect x="365" y="378" width="110" height="28" rx="5" fill="#fff" fill-opacity="0.9"/>
-            <text x="420" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">Light mfg.</text>
-            <text x="420" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">&amp; assembly</text>
+            <rect x="435" y="378" width="110" height="28" rx="5" fill="#fff" fill-opacity="0.9"/>
+            <text x="490" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">Light mfg.</text>
+            <text x="490" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">&amp; assembly</text>
 
             <!-- Trade services & contractors -->
-            <circle cx="610" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-6)" stroke-width="2.5"/>
-            <g transform="translate(600,350)" stroke="var(--fp-viz-6)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="630" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-6)" stroke-width="2.5"/>
+            <g transform="translate(620,350)" stroke="var(--fp-viz-6)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14.2 5.8a4 4 0 00-5 5L3.5 17.5l3 3 6.8-6.8a4 4 0 005-5l-2.6 2.6-2.2-2.2z"/>
             </g>
-            <rect x="545" y="378" width="130" height="28" rx="5" fill="#fff" fill-opacity="0.9"/>
-            <text x="610" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">Trade services</text>
-            <text x="610" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">&amp; contractors</text>
+            <rect x="565" y="378" width="130" height="28" rx="5" fill="#fff" fill-opacity="0.9"/>
+            <text x="630" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">Trade services</text>
+            <text x="630" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">&amp; contractors</text>
 
             <!-- Shallow-bay hero: the one accent color, reserved for the destination -->
             <circle cx="350" cy="460" r="33" fill="var(--fp-signal-orange)" stroke="#fff" stroke-width="2.5"/>
@@ -816,20 +829,20 @@
             <text x="350" y="520" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="var(--fp-fg4)">where every channel above ultimately competes for space</text>
           </svg>
         </div>
-        <p class="fp-caption" style="margin-top:4px; text-align:center;">Illustrative framework, not deal-level flow data — reflects typical last-mile distribution patterns for port-driven regional demand. Rail figure: Cushman &amp; Wakefield, <i>H1 2026 Port of New York &amp; New Jersey Report</i>.</p>
+        <p class="fp-caption" style="margin-top:4px; text-align:center;">Illustrative framework, not deal-level flow data — reflects typical last-mile distribution patterns for port-driven regional demand. Last-mile logistics is broken out as its own channel given the tour stop in the Meadowlands submarket — among the closest shallow-bay geographies to Manhattan and a prime final-mile location. Rail figure: Cushman &amp; Wakefield, <i>H1 2026 Port of New York &amp; New Jersey Report</i>.</p>
       </div>
     </section>
 
     <section class="block">
       <div class="callout">
-        <b>The common denominator.</b> A parcel fulfillment center, a 3PL cross-dock, a light assembly shop and an HVAC contractor's yard look nothing alike on paper — but all four need small, well-located, divisible space near the population they serve. That's the demand base underneath every shallow-bay acquisition.
+        <b>The common denominator.</b> A parcel fulfillment center, a 3PL cross-dock, a final-mile delivery depot, a light assembly shop and an HVAC contractor's yard look nothing alike on paper — but all five need small, well-located, divisible space near the population they serve. That's the demand base underneath every shallow-bay acquisition.
       </div>
     </section>
 
     <section class="block" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
       <div style="max-width:560px;">
         <div class="fp-overline" style="color:var(--fp-fg4);">Underwriting the flow</div>
-        <div style="font-family:var(--fp-font-display); font-weight:500; font-size:28px; color:var(--fp-fg2); line-height:1.2; margin:8px 0 12px;">Four channels. <span style="color:var(--fp-signal-orange);">One thesis.</span></div>
+        <div style="font-family:var(--fp-font-display); font-weight:500; font-size:28px; color:var(--fp-fg2); line-height:1.2; margin:8px 0 12px;">Five channels. <span style="color:var(--fp-signal-orange);">One thesis.</span></div>
         <p class="fp-body" style="font-size:11.5px; color:var(--fp-fg3); line-height:1.55;">Faropoint doesn't underwrite a single tenant type — it underwrites the infill format every channel above ultimately needs. The final page shows how that shows up in Faropoint's own house view and 2026 acquisition record.</p>
       </div>
     </section>
