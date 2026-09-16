@@ -1,0 +1,262 @@
+/* ============================================================
+   Faropoint Design System — Colors & Type
+   Source of truth: fp-brand-2026.md (Romano Agency, 2026 refresh)
+   Load this once, then use the CSS variables + semantic classes.
+   ============================================================ */
+
+/* ---- Fonts -------------------------------------------------
+   Clash Display — primary / display  (SELF-HOSTED, fonts/*.otf)
+   Roboto       — secondary / UI + body (Google Fonts CDN)
+   ----------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap');
+
+@font-face {
+  font-family: 'Clash Display';
+  src: url('fonts/ClashDisplay-Extralight.otf') format('opentype');
+  font-weight: 200; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Clash Display';
+  src: url('fonts/ClashDisplay-Light.otf') format('opentype');
+  font-weight: 300; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Clash Display';
+  src: url('fonts/ClashDisplay-Regular.otf') format('opentype');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Clash Display';
+  src: url('fonts/ClashDisplay-Medium.otf') format('opentype');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Clash Display';
+  src: url('fonts/ClashDisplay-Semibold.otf') format('opentype');
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Clash Display';
+  src: url('fonts/ClashDisplay-Bold.otf') format('opentype');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+
+:root {
+  /* ===== PRIMARY PALETTE ===== */
+  --fp-midnight-blue: #344050;  /* top nav, headings on light */
+  --fp-signal-orange: #FFAB1F;  /* accent — KPIs, CTAs, active states */
+  --fp-charcoal:      #2F2F2F;  /* default dark surface */
+  --fp-white:         #FFFFFF;
+
+  /* ===== ORANGE SCALE (dark -> light) ===== */
+  --fp-orange-800: #B37712;
+  --fp-orange-500: #FFAB1F;   /* = Signal Orange */
+  --fp-orange-400: #FFBC4C;
+  --fp-orange-300: #FFCD79;
+  --fp-orange-200: #FFDDA5;
+  --fp-orange-100: #FFEED2;
+
+  /* ===== BLUE SCALE (dark -> light) ===== */
+  --fp-blue-900: #213043;
+  --fp-blue-800: #344050;     /* = Midnight Blue */
+  --fp-blue-600: #5D6673;
+  --fp-blue-400: #858C96;     /* Blue-Grey — muted text */
+  --fp-blue-300: #AEB3B9;     /* inactive sidebar text */
+  --fp-blue-200: #D6D9DC;     /* borders / dividers */
+
+  /* ===== DATA-VIZ (categorical assignment order) ===== */
+  --fp-viz-1: #FFAB1F;  /* Signal Orange  — warm anchor */
+  --fp-viz-2: #344050;  /* Midnight Blue  — cool anchor */
+  --fp-viz-3: #858C96;  /* Blue-Grey      — neutral */
+  --fp-viz-4: #E07820;  /* Rust           — mid warm */
+  --fp-viz-5: #1E6A96;  /* Ocean Blue     — mid cool */
+  --fp-viz-6: #C04E18;  /* Burnt Orange   — dark warm */
+  --fp-viz-7: #2EA8C4;  /* Cerulean       — light cool */
+  --fp-viz-8: #8C3015;  /* Dark Ember     — 8th series only */
+  --fp-viz-9: #1C2C3C;  /* Deep Navy      — 9th series only */
+
+  /* ===== STATUS / STOPLIGHT ===== */
+  --fp-go:      #15803D;  /* good   — text-safe */
+  --fp-caution: #FFAB1F;  /* watch  — fills/icons only, never text on white */
+  --fp-alert:   #C41230;  /* alert  — text-safe */
+
+  /* ===== SEMANTIC SURFACES ===== */
+  --fp-bg-page:   #f4f5f7;  /* default app/page background */
+  --fp-bg-card:   #FFFFFF;
+  --fp-bg-dark:   #2F2F2F;  /* Charcoal — dashboards/apps dark surface */
+  --fp-bg-nav:    #344050;  /* Midnight Blue — TOP NAV BAR ONLY */
+  --fp-border:    #D6D9DC;
+  --fp-divider:   #f0f1f3;
+  --fp-shadow-color: rgba(52, 64, 80, 0.08); /* never pure black */
+
+  /* ===== SEMANTIC TEXT ===== */
+  --fp-fg1: #2F2F2F;   /* primary text (Charcoal) — never #000 */
+  --fp-fg2: #344050;   /* headings on light (Midnight Blue) */
+  --fp-fg3: #5D6673;   /* secondary text */
+  --fp-fg4: #858C96;   /* muted / labels / captions */
+  --fp-fg-on-dark:       #FFFFFF;
+  --fp-fg-on-dark-muted: #AEB3B9;
+
+  /* ===== TYPE FAMILIES ===== */
+  --fp-font-display: 'Clash Display', Arial, sans-serif;  /* headlines only */
+  --fp-font-body:    'Roboto', Arial, sans-serif;         /* everything else */
+  --fp-font-mono:    'Roboto Mono', 'Courier New', monospace;
+
+  /* ===== TYPE SCALE (pt values from brand spec) ===== */
+  --fp-size-page-title:  28px;  /* Clash Display Medium */
+  --fp-size-section:     20px;  /* Clash Display Medium */
+  --fp-size-subhead:     16px;  /* Clash Display Regular */
+  --fp-size-body-head:   13px;  /* Roboto Bold */
+  --fp-size-body:        12px;  /* Roboto Regular */
+  --fp-size-label:       11px;  /* Roboto Regular */
+  --fp-size-caption:     10px;  /* Roboto Regular */
+  --fp-size-kpi:         32px;  /* Roboto Bold */
+
+  /* ===== WEIGHTS (approved only) ===== */
+  --fp-w-display-light:   300;   /* @kind font */
+  --fp-w-display-regular: 400;   /* @kind font */
+  /* fp-w-display-medium is the heaviest weight allowed for Clash Display */
+  --fp-w-display-medium:  500;   /* @kind font */
+  --fp-w-body-regular:    400;   /* @kind font */
+  --fp-w-body-medium:     500;   /* @kind font */
+  --fp-w-body-bold:       700;   /* @kind font */
+
+  /* ===== RADII ===== */
+  --fp-radius-sm:   4px;
+  --fp-radius:      7px;   /* nav pills, buttons */
+  --fp-radius-md:   8px;   /* swatches, inputs */
+  --fp-radius-lg:   10px;  /* cards */
+  --fp-radius-xl:   12px;
+  --fp-radius-pill: 999px;
+
+  /* ===== ELEVATION (Midnight-Blue tinted, never black) ===== */
+  --fp-shadow-sm: 0 1px 2px rgba(52,64,80,0.06);
+  --fp-shadow:    0 1px 3px rgba(52,64,80,0.08), 0 1px 2px rgba(52,64,80,0.06);
+  --fp-shadow-md: 0 4px 12px rgba(52,64,80,0.10);
+  --fp-shadow-lg: 0 12px 32px rgba(52,64,80,0.14);
+
+  /* ===== SPACING (4px base) ===== */
+  --fp-space-1: 4px;
+  --fp-space-2: 8px;
+  --fp-space-3: 12px;
+  --fp-space-4: 16px;
+  --fp-space-5: 20px;
+  --fp-space-6: 24px;
+  --fp-space-8: 32px;
+  --fp-space-10: 40px;
+  --fp-space-12: 48px;
+
+  /* ===== APPROVED GRADIENTS ===== */
+  --fp-gradient-orange: linear-gradient(135deg, #FFAB1F 0%, #2F2F2F 100%);  /* @kind color */
+  --fp-gradient-blue:   linear-gradient(135deg, #2F2F2F 0%, #344050 100%); /* @kind color */
+}
+
+/* ============================================================
+   SEMANTIC TYPE CLASSES
+   ============================================================ */
+.fp-page-title {
+  font-family: var(--fp-font-display);
+  font-weight: var(--fp-w-display-medium);
+  font-size: var(--fp-size-page-title);
+  letter-spacing: -0.5px;
+  color: var(--fp-fg2);
+  line-height: 1.15;
+}
+.fp-section-heading {
+  font-family: var(--fp-font-display);
+  font-weight: var(--fp-w-display-medium);
+  font-size: var(--fp-size-section);
+  letter-spacing: -0.2px;
+  color: var(--fp-fg2);
+  line-height: 1.2;
+}
+.fp-subheading {
+  font-family: var(--fp-font-display);
+  font-weight: var(--fp-w-display-regular);
+  font-size: var(--fp-size-subhead);
+  color: var(--fp-fg2);
+  line-height: 1.3;
+}
+.fp-body-heading {
+  font-family: var(--fp-font-body);
+  font-weight: var(--fp-w-body-bold);
+  font-size: var(--fp-size-body-head);
+  color: var(--fp-fg1);
+  line-height: 1.4;
+}
+.fp-body {
+  font-family: var(--fp-font-body);
+  font-weight: var(--fp-w-body-regular);
+  font-size: var(--fp-size-body);
+  color: var(--fp-fg1);
+  line-height: 1.55;
+}
+.fp-label {
+  font-family: var(--fp-font-body);
+  font-weight: var(--fp-w-body-regular);
+  font-size: var(--fp-size-label);
+  color: var(--fp-fg4);
+  line-height: 1.4;
+}
+.fp-caption {
+  font-family: var(--fp-font-body);
+  font-weight: var(--fp-w-body-regular);
+  font-size: var(--fp-size-caption);
+  color: var(--fp-fg4);
+  line-height: 1.4;
+}
+/* ============================================================
+   TWO-PART HEADLINE (section title | slide label)
+   Left = Clash Display Medium (section title)
+   Pipe + right = Clash Display Light (slide-specific label / takeaway)
+   Compose with a size class (.fp-page-title, .fp-section-heading) or
+   set font-size on the wrapper for deck-scale headlines.
+   ============================================================ */
+.fp-headline {
+  font-family: var(--fp-font-display);
+  font-weight: var(--fp-w-display-medium);
+  letter-spacing: -0.5px;
+  color: var(--fp-fg2);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.fp-headline-section { font-weight: var(--fp-w-display-medium); }
+.fp-headline-label   { font-weight: var(--fp-w-display-light); }
+.fp-headline-divider {
+  font-weight: var(--fp-w-display-light);
+  color: var(--fp-blue-300);
+  padding: 0 0.28em;
+}
+/* Optional: subhead directly under a two-part headline (Roboto, always) */
+.fp-headline-sub {
+  font-family: var(--fp-font-body);
+  font-weight: var(--fp-w-body-regular);
+  font-size: var(--fp-size-body);
+  color: var(--fp-fg3);
+  line-height: 1.5;
+  margin-top: var(--fp-space-2);
+  max-width: 62ch;
+}
+
+/* Section eyebrow / overline used throughout product chrome */
+.fp-overline {
+  font-family: var(--fp-font-body);
+  font-weight: var(--fp-w-body-bold);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--fp-fg4);
+}
+.fp-kpi {
+  font-family: var(--fp-font-body);
+  font-weight: var(--fp-w-body-bold);
+  font-size: var(--fp-size-kpi);
+  line-height: 1;
+  color: var(--fp-signal-orange); /* KPI accent — on charcoal or light */
+}
+
+/* ============================================================
+   GRADIENT HELPERS
+   ============================================================ */
+.fp-gradient-orange { background: var(--fp-gradient-orange); }
+.fp-gradient-blue   { background: var(--fp-gradient-blue); }

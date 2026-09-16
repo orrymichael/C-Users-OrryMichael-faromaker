@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Port of NY/NJ &amp; the Shallow Bay thesis — Faropoint LPAC Tour</title>
+<link rel="icon" href="./assets/Favicon.svg">
+<link rel="stylesheet" href="./colors_and_type.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; background:#dfe2e6; color:var(--fp-fg1); font-family:var(--fp-font-body); }
+  .doc { display:flex; flex-direction:column; align-items:center; gap:28px; padding:28px 0 48px; }
+  .page { width:8.5in; height:11in; background:#fff; box-shadow:var(--fp-shadow-lg); padding:0.4in 0.55in 0.38in; display:flex; flex-direction:column; gap:7px; position:relative; overflow:hidden; }
+
+  /* Page chrome */
+  .doc-header { display:flex; align-items:center; justify-content:space-between; padding-bottom:7px; border-bottom:2px solid var(--fp-blue-800); }
+  .doc-header img { height:20px; }
+  .doc-header .meta { text-align:right; }
+  .page-footer { position:absolute; left:0.55in; right:0.55in; bottom:0.32in; display:flex; justify-content:space-between; align-items:flex-end; border-top:1px solid var(--fp-divider); padding-top:8px; }
+  .page-footer .fp-caption { max-width:82%; }
+
+  h1.doc-title { margin:2px 0 0; }
+  .fp-headline.doc-size { font-size:26px; }
+
+  /* KPI band */
+  .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .card { background:var(--fp-bg-card); border:1px solid var(--fp-border); border-radius:var(--fp-radius-lg); box-shadow:var(--fp-shadow); padding:9px 12px; display:flex; flex-direction:column; gap:3px; }
+  .card.dark { background:var(--fp-bg-dark); border-color:rgba(255,255,255,0.07); color:var(--fp-fg-on-dark); }
+  .card.dark .fp-overline { color:var(--fp-fg-on-dark-muted); }
+  .card.dark .fp-caption { color:var(--fp-fg-on-dark-muted); }
+  .card .fp-kpi { font-size:24px; color:var(--fp-fg2); }
+  .card.dark .fp-kpi { color:var(--fp-signal-orange); }
+  .delta { font-size:10.5px; font-weight:500; color:var(--fp-go); display:flex; align-items:center; gap:3px; }
+  .delta.flat { color:var(--fp-fg4); }
+  .delta.down { color:var(--fp-alert); }
+
+  section.block { display:flex; flex-direction:column; gap:4px; }
+  .block-head { display:flex; flex-direction:column; gap:2px; }
+
+  /* Chart card */
+  .chart-card { background:var(--fp-bg-card); border:1px solid var(--fp-border); border-radius:var(--fp-radius-lg); box-shadow:var(--fp-shadow); padding:7px 10px; display:flex; flex-direction:column; gap:4px; }
+  .bars { display:flex; flex-direction:column; gap:5px; }
+  .bar-row { display:grid; grid-template-columns:118px 1fr 108px; align-items:center; gap:10px; }
+  .bar-row.compact { grid-template-columns:150px 1fr 74px; }
+  .bar-row .name { font-size:11px; font-weight:500; color:var(--fp-fg1); }
+  .bar-row.hero .name { font-weight:700; color:var(--fp-fg2); }
+  .bar-track { position:relative; height:15px; background:var(--fp-divider); border-radius:var(--fp-radius-sm); overflow:hidden; }
+  .bar-fill { position:absolute; left:0; top:0; bottom:0; border-radius:var(--fp-radius-sm); }
+  .bar-row .value { font-size:11px; font-weight:700; color:var(--fp-fg2); text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .bar-row .value .sub { display:block; font-weight:400; color:var(--fp-fg4); font-size:9.5px; }
+  .legend { display:flex; gap:14px; flex-wrap:wrap; }
+  .legend-item { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--fp-fg3); }
+  .legend-dot { width:9px; height:9px; border-radius:3px; flex-shrink:0; }
+
+  table.data-table { width:100%; border-collapse:collapse; font-size:10px; }
+  table.data-table caption { text-align:left; font-size:9.5px; color:var(--fp-fg4); margin-bottom:4px; }
+  table.data-table th, table.data-table td { text-align:right; padding:3px 6px; border-bottom:1px solid var(--fp-divider); }
+  table.data-table th:first-child, table.data-table td:first-child { text-align:left; }
+  table.data-table th { font-size:9px; color:var(--fp-fg4); font-weight:700; text-transform:uppercase; letter-spacing:0.3px; }
+  table.data-table tr.hero td { font-weight:700; color:var(--fp-fg2); background:var(--fp-orange-100); }
+
+  /* Flow */
+  .flow { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .flow-card { background:var(--fp-bg-card); border:1px solid var(--fp-border); border-radius:var(--fp-radius-lg); box-shadow:var(--fp-shadow); padding:8px 10px; display:flex; flex-direction:column; gap:4px; }
+  .flow-card .step { display:flex; align-items:center; gap:6px; }
+  .flow-card .step .num { width:17px; height:17px; border-radius:999px; background:var(--fp-blue-800); color:#fff; font-size:9.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .flow-card.hero .step .num { background:var(--fp-signal-orange); color:var(--fp-charcoal); }
+  .flow-card .step .fp-body-heading { font-size:11px; }
+  .flow-card p { margin:0; font-size:9.5px; line-height:1.4; color:var(--fp-fg3); }
+
+  .two-col { display:grid; grid-template-columns:1.1fr 0.9fr; gap:12px; align-items:start; }
+  .notable-list { display:flex; flex-direction:column; gap:4px; }
+  .notable-item { font-size:10px; color:var(--fp-fg1); border-bottom:1px solid var(--fp-divider); padding-bottom:4px; }
+  .notable-item:last-child { border-bottom:0; padding-bottom:0; }
+  .notable-item b { color:var(--fp-fg2); }
+
+  .callout { background:var(--fp-bg-page); border-left:3px solid var(--fp-signal-orange); border-radius:0 var(--fp-radius) var(--fp-radius) 0; padding:9px 12px; font-size:10.5px; color:var(--fp-fg1); }
+
+  /* Thesis grid */
+  .thesis-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .thesis-grid .flow-card { min-height:84px; }
+
+  /* Mini stat row */
+  .mini-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+  .mini-stat { background:var(--fp-bg-page); border-radius:var(--fp-radius); padding:6px 9px; }
+  .mini-stat .mini-num { font-size:16px; font-weight:700; color:var(--fp-fg2); font-family:var(--fp-font-body); }
+  .mini-stat .mini-label { font-size:9px; color:var(--fp-fg4); line-height:1.35; margin-top:2px; }
+  .bar-row .trend { font-size:9px; font-weight:600; white-space:nowrap; }
+  .bar-row .trend.go { color:var(--fp-go); }
+  .bar-row .trend.flat { color:var(--fp-fg4); }
+  .bar-row .trend.alert { color:var(--fp-alert); }
+
+  /* Placeholder cards (pending data) */
+  .placeholder-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+  .placeholder-card { border:1.5px dashed var(--fp-border); border-radius:var(--fp-radius-lg); padding:6px 7px; text-align:center; background:repeating-linear-gradient(135deg, rgba(93,102,115,0.03) 0 6px, transparent 6px 12px); }
+  .placeholder-card .fp-overline { font-size:8px; }
+  .placeholder-card .ph-value { font-size:15px; font-weight:700; color:var(--fp-fg4); margin-top:3px; }
+  .placeholder-note { background:#fdf2e9; border-left:3px solid var(--fp-signal-orange); border-radius:0 var(--fp-radius) var(--fp-radius) 0; padding:6px 11px; font-size:9.5px; color:var(--fp-fg1); }
+
+  /* Real state map */
+  .realmap-wrap { display:flex; justify-content:center; }
+  .realmap { position:relative; overflow:hidden; border-radius:var(--fp-radius); }
+  .realmap svg { position:absolute; left:0; top:0; width:100%; height:100%; overflow:hidden; }
+  .map-legend-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px 18px; margin-top:0; }
+  .map-legend-col { display:flex; flex-direction:column; gap:3px; }
+  .lg-row { display:grid; grid-template-columns:15px 96px 38px 1fr; align-items:baseline; gap:6px; font-size:9px; }
+  .lg-num { display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:999px; background:var(--fp-charcoal); color:#fff; font-weight:700; font-size:7.5px; }
+  .lg-name { font-weight:600; color:var(--fp-fg2); }
+  .lg-pop { font-weight:700; color:var(--fp-orange-800); }
+  .lg-detail { color:var(--fp-fg4); }
+
+  /* Case study narrative page */
+  .case-cols { display:grid; grid-template-columns:1fr 1fr; gap:0 22px; }
+  .case-section { margin-bottom:11px; }
+  .case-section:last-child { margin-bottom:0; }
+  .case-section h3.fp-body-heading { font-size:11.5px; color:var(--fp-fg2); margin:0 0 4px; }
+  .case-section p.fp-body { font-size:9.8px; line-height:1.52; margin:0; color:var(--fp-fg1); }
+
+  /* Distribution flow chart */
+  .flowchart { display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .fc-tier { display:flex; gap:8px; justify-content:center; width:100%; }
+  .fc-box { background:#fff; border:1px solid var(--fp-border); border-radius:var(--fp-radius); box-shadow:var(--fp-shadow); padding:8px 12px; text-align:center; flex:1; }
+  .fc-box.origin { background:var(--fp-bg-dark); border-color:rgba(255,255,255,0.1); }
+  .fc-box.origin .fc-title, .fc-box.origin .fc-sub { color:var(--fp-fg-on-dark); }
+  .fc-box.hero { background:var(--fp-orange-100); border-color:var(--fp-signal-orange); }
+  .fc-title { font-size:10.5px; font-weight:700; color:var(--fp-fg2); }
+  .fc-sub { font-size:9px; color:var(--fp-fg4); margin-top:3px; line-height:1.4; }
+  .fc-arrow { color:var(--fp-blue-300); font-size:16px; line-height:1; }
+  .fc-arrow svg { width:16px; height:16px; display:block; }
+
+  @media print {
+    body { background:#fff; }
+    .doc { padding:0; gap:0; }
+    .page { box-shadow:none; width:auto; min-height:100vh; page-break-after:always; }
+    .page:last-child { page-break-after:auto; }
+  }
+  @page { size: letter; margin:0; }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <!-- ================= PAGE 1 — CASE STUDY ================= -->
+  <div class="page">
+    <div class="doc-header">
+      <img src="./assets/FP-logo.svg" alt="Faropoint">
+      <div class="meta">
+        <div class="fp-overline">LPAC Investor Tour — Northeast</div>
+        <div class="fp-caption">H1 2026 · Case study</div>
+      </div>
+    </div>
+
+    <header>
+      <h1 class="fp-headline doc-size"><span class="fp-headline-section">Case study</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">Port-driven demand and the NNJ shallow-bay market</span></h1>
+      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">How the Port of NY/NJ's throughput becomes granular, diversified shallow-bay demand in Northern New Jersey — and why Faropoint's acquisition platform is built around capturing it.</p>
+    </header>
+
+    <section class="kpi-grid">
+      <div class="card dark">
+        <div class="fp-overline">Rank</div>
+        <div class="fp-kpi">No. 1</div>
+        <div class="fp-caption">Busiest port on the East Coast</div>
+      </div>
+      <div class="card">
+        <div class="fp-overline">H1 2026 volume</div>
+        <div class="fp-kpi">4.4M TEUs</div>
+        <div class="fp-caption">18.1% share, top-9 U.S. ports</div>
+      </div>
+      <div class="card">
+        <div class="fp-overline">Goods moved (2024)</div>
+        <div class="fp-kpi">$264B</div>
+        <div class="fp-caption">60M+ consumers within 250 mi — ~1/3 of U.S. GDP</div>
+      </div>
+      <div class="card">
+        <div class="fp-overline">Faropoint, NJ industrial YTD</div>
+        <div class="fp-kpi">19.2%</div>
+        <div class="fp-caption">Of industrial-sales deals — #1 buyer by count</div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="case-cols">
+        <div>
+          <div class="case-section">
+            <h3 class="fp-body-heading">The port backdrop</h3>
+            <p class="fp-body">The Port of NY/NJ ranked as the third-busiest U.S. port at mid-year 2026, handling 4.4M TEUs in H1 — good for an 18.1% share of volume among the top nine reporting ports. Loaded import volume reached 2.2M TEUs. The port moved $264B in goods in 2024 and provides access to more than 60 million consumers within a 250-mile radius, roughly one-third of the nation's GDP. Rail cargo totaled 341,671 containers in H1 2026 — meaningful, but still a minority share against truck-dependent flows. As trucking rates continue to rise, occupiers are increasingly prioritizing locations closer to the port to reduce drayage costs — a trend the Port Authority is reinforcing through infrastructure investment, including a landmark agreement to evaluate deepening navigational channels to 55 feet and a major redevelopment of the Newark-Elizabeth port complex's northern entrance.</p>
+          </div>
+          <div class="case-section">
+            <h3 class="fp-body-heading">Why this matters for NNJ specifically</h3>
+            <p class="fp-body">Northern New Jersey sits directly in that truck-served radius — the closest, most built-out industrial geography to the port complex on the New Jersey side. The Port Region submarket itself is the largest in Northern NJ, with 84.1 million square feet of warehouse inventory. That proximity is precisely why NNJ carries some of the highest real estate and labor costs in the country: it's the price of access to the East Coast's leading container gateway.</p>
+          </div>
+        </div>
+        <div>
+          <div class="case-section">
+            <h3 class="fp-body-heading">More than distribution: what shallow bay actually houses</h3>
+            <p class="fp-body">Import volume doesn't just create demand for warehousing — it seeds an entire ecosystem of businesses that need small-bay space to operate. Shallow-bay buildings in NNJ house last-mile distribution, light manufacturing and assembly, contractor and trade businesses (electrical, plumbing, HVAC, millwork), showroom and wholesale operations, food and beverage prep and distribution, e-commerce fulfillment and returns processing, and import-adjacent light assembly (kitting, packaging, light customization of goods landing at the port). These tenants are typically smaller local and regional operators, not national logistics users — part of why shallow-bay leasing is granular, relationship-driven, and less correlated to any single tenant's fortunes than large-format bulk space.</p>
+          </div>
+          <div class="case-section">
+            <h3 class="fp-body-heading">Where Faropoint fits</h3>
+            <p class="fp-body">This is the exact dynamic Faropoint's NNJ platform is built around: high-frequency acquisition of infill, supply-constrained shallow-bay assets serving this diversified tenant base — not large-format bulk product built for a handful of logistics users. Faropoint is the No. 1 buyer in NJ's industrial market by deal count YTD 2026 — 5 deals, 9.8% of all tracked NJ industrial, land and IOS deals, widening to 19.2% when narrowed to industrial-sales transactions specifically. That deal flow gives the platform outsized, and growing, visibility into the off-market, relationship-driven activity this thesis depends on.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="callout">
+        <b>The takeaway for LPs.</b> The story isn't "industrial is a good asset class," and it isn't just "distribution near ports is good." It's that port throughput seeds demand across a wide range of light-industrial, trade, and distribution users, all competing for the same scarce shallow-bay stock — in a market where rents keep climbing even as some new supply comes online. Faropoint's leading share of NJ deal volume shows the platform capturing that demand deal by deal, and its diversified tenant exposure means its fortunes aren't tied to any single tenant type or industry cycle.
+      </div>
+    </section>
+
+    <section class="block" style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+      <div class="fp-overline" style="color:var(--fp-fg4); text-align:center; margin-bottom:10px;">What follows</div>
+      <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+        <div class="flow-card" style="flex:0 1 148px;"><div class="step"><span class="num">1</span><span class="fp-body-heading">The port</span></div><p>H1 2026 volume &amp; ranking</p></div>
+        <div class="flow-card" style="flex:0 1 148px;"><div class="step"><span class="num">2</span><span class="fp-body-heading">Port Region</span></div><p>Where throughput becomes NJ demand</p></div>
+        <div class="flow-card" style="flex:0 1 148px;"><div class="step"><span class="num">3</span><span class="fp-body-heading">Why shallow bay</span></div><p>Six structural drivers</p></div>
+        <div class="flow-card" style="flex:0 1 148px;"><div class="step"><span class="num">4</span><span class="fp-body-heading">Mapped</span></div><p>Population density, corridor-wide</p></div>
+        <div class="flow-card" style="flex:0 1 148px;"><div class="step"><span class="num">5</span><span class="fp-body-heading">Faropoint's footprint</span></div><p>Assets, on the ground</p></div>
+        <div class="flow-card" style="flex:0 1 148px;"><div class="step"><span class="num">6</span><span class="fp-body-heading">Distribution channels</span></div><p>Where the goods actually go</p></div>
+        <div class="flow-card" style="flex:0 1 148px;"><div class="step"><span class="num">7</span><span class="fp-body-heading">Why it converges</span></div><p>Proximity &amp; divisibility, channel by channel</p></div>
+        <div class="flow-card hero" style="flex:0 1 148px;"><div class="step"><span class="num">8</span><span class="fp-body-heading">Faropoint's thesis</span></div><p>House view &amp; 2026 track record</p></div>
+      </div>
+    </section>
+
+    <div class="page-footer">
+      <p class="fp-caption">Sources: Cushman &amp; Wakefield, <i>H1 2026 Port of New York &amp; New Jersey Report</i>; Faropoint Research, <i>Market Pulse H1 2026</i>.</p>
+      <p class="fp-caption">Faropoint</p>
+    </div>
+  </div>
+
+  <!-- ================= PAGE 2 — THE PORT ================= -->
+  <div class="page">
+    <div class="doc-header">
+      <img src="./assets/FP-logo.svg" alt="Faropoint">
+      <div class="meta">
+        <div class="fp-overline">LPAC Investor Tour — Northeast</div>
+        <div class="fp-caption">H1 2026 · Prepared for Orry Michael, VP Acquisitions</div>
+      </div>
+    </div>
+
+    <header>
+      <h1 class="fp-headline doc-size"><span class="fp-headline-section">Port of NY/NJ</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">Why it matters to New Jersey and the region</span></h1>
+      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">H1 2026 volume confirms the port's scale as the East Coast's leading gateway — and its throughput is the demand engine behind New Jersey's industrial market broadly, before shallow bay even enters the picture.</p>
+    </header>
+
+    <section class="kpi-grid">
+      <div class="card dark">
+        <div class="fp-overline">Rank</div>
+        <div class="fp-kpi">No. 1</div>
+        <div class="fp-caption">Busiest port on the East Coast</div>
+      </div>
+      <div class="card">
+        <div class="fp-overline">H1 2026 total volume</div>
+        <div class="fp-kpi">4.4M TEUs</div>
+        <div class="delta flat">▬ +0.2% YoY · No. 3 nationally</div>
+        <div class="fp-caption">Full-year 2025: 8.9M TEUs (+2.3% YoY)</div>
+      </div>
+      <div class="card">
+        <div class="fp-overline">Goods moved (2024)</div>
+        <div class="fp-kpi">$264B</div>
+        <div class="fp-caption">Value of cargo through the port</div>
+      </div>
+      <div class="card">
+        <div class="fp-overline">Rail cargo, H1 2026</div>
+        <div class="fp-kpi">341,671</div>
+        <div class="fp-caption">Full-year 2025: 718,942 (+12.4% YoY)</div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <h2 class="fp-section-heading" style="font-size:16px;">A top-3 gateway on loaded imports</h2>
+        <p class="fp-body" style="color:var(--fp-fg3); font-size:10.5px;">Port of NY/NJ is 1 of only 3 U.S. ports to post more than 2.0M TEUs of loaded import cargo in H1 2026 — and holds 18.1% of top-nine-port volume.</p>
+      </div>
+      <div class="chart-card">
+        <div class="fp-body-heading" style="font-size:11px;">H1 2026 total container volume by port</div>
+        <div class="bars" id="chart-ports"></div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-1)"></span>Port of NY/NJ</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-2)"></span>West Coast gateways</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-3)"></span>Other East/Gulf Coast ports</span>
+        </div>
+        <table class="data-table">
+          <caption>Top 9 U.S. ports, H1 2026 vs. H1 2025</caption>
+          <thead><tr><th>Port</th><th>Total TEUs</th><th>YoY</th><th>Loaded imports</th><th>YoY</th><th>Share</th></tr></thead>
+          <tbody>
+            <tr><td>Los Angeles</td><td>5,122,603</td><td>+3.4%</td><td>2,675,892</td><td>+5.0%</td><td>21.0%</td></tr>
+            <tr><td>Long Beach</td><td>4,829,578</td><td>+1.7%</td><td>2,347,999</td><td>+2.6%</td><td>19.8%</td></tr>
+            <tr class="hero"><td>New York/New Jersey</td><td>4,427,159</td><td>+0.2%</td><td>2,229,447</td><td>−0.2%</td><td>18.1%</td></tr>
+            <tr><td>Savannah</td><td>2,837,324</td><td>−0.8%</td><td>1,420,121</td><td>+2.1%</td><td>11.6%</td></tr>
+            <tr><td>Houston</td><td>2,229,473</td><td>+2.8%</td><td>1,029,667</td><td>+6.8%</td><td>9.1%</td></tr>
+            <tr><td>Virginia</td><td>1,636,588</td><td>−0.3%</td><td>797,610</td><td>+5.6%</td><td>6.7%</td></tr>
+            <tr><td>Charleston</td><td>1,185,901</td><td>−9.5%</td><td>577,901</td><td>−8.8%</td><td>4.9%</td></tr>
+            <tr><td>Oakland</td><td>1,114,666</td><td>−2.5%</td><td>473,864</td><td>−1.0%</td><td>4.6%</td></tr>
+            <tr><td>Seattle Tacoma</td><td>1,066,862</td><td>−15.6%</td><td>520,095</td><td>−13.9%</td><td>4.4%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="chart-card" style="padding:5px 10px; gap:3px;">
+        <div class="fp-body-heading" style="font-size:11px;">Momentum check: full-year 2025 → H1 2026</div>
+        <div class="notable-list">
+          <div class="notable-item"><b>Total volume</b> — FY2025 8.9M TEUs (+2.3% YoY) → H1 2026 4.4M TEUs (+0.2% YoY)</div>
+          <div class="notable-item"><b>Rail cargo</b> — FY2025 718,942 containers (+12.4% YoY) → H1 2026 341,671 containers</div>
+          <div class="notable-item">Port Region vacancy — FY2025 11.4% (+20 bps QoQ) → H1 2026 12.5% (+110 bps QoQ)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="callout" style="padding:6px 12px;">
+        <b>Deceleration, not demand loss.</b> Container growth cooled from +2.3% (FY2025) to +0.2% (H1 2026) after 2025's tariff-driven front-loading pulled volume forward — rail cargo and Port Region leasing stayed strong, and the port still anchors 60M+ consumers within 250 miles, roughly one-third of U.S. GDP.
+      </div>
+    </section>
+
+    <div class="page-footer">
+      <p class="fp-caption">Sources: Cushman &amp; Wakefield, <i>Year-End 2025</i> and <i>H1 2026 Port of New York &amp; New Jersey Reports</i> (Instant Insight).</p>
+      <p class="fp-caption">Faropoint</p>
+    </div>
+  </div>
+
+  <!-- ================= PAGE 2 — REGIONAL INDUSTRIAL IMPACT ================= -->
+  <div class="page">
+    <div class="doc-header">
+      <img src="./assets/FP-logo.svg" alt="Faropoint">
+      <div class="meta">
+        <div class="fp-overline">LPAC Investor Tour — Northeast</div>
+        <div class="fp-caption">H1 2026 · Port Region &amp; regional industrial demand</div>
+      </div>
+    </div>
+
+    <header>
+      <h1 class="fp-headline doc-size"><span class="fp-headline-section">Port Region</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">How port volume becomes New Jersey industrial demand</span></h1>
+      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">The Port Region is the largest industrial submarket in Northern New Jersey — the clearest regional evidence of how the port's throughput converts directly into real estate demand.</p>
+    </header>
+
+    <section class="kpi-grid">
+      <div class="card">
+        <div class="fp-overline">Port Region inventory</div>
+        <div class="fp-kpi">84.1 msf</div>
+        <div class="fp-caption">Largest warehouse submarket in Northern NJ</div>
+      </div>
+      <div class="card">
+        <div class="fp-overline">H1 2026 leasing</div>
+        <div class="fp-kpi">1.9 msf</div>
+        <div class="delta">▲ +9.8% YoY</div>
+      </div>
+      <div class="card">
+        <div class="fp-overline">Vacancy rate</div>
+        <div class="fp-kpi">12.5%</div>
+        <div class="delta down">▲ +110 bps QoQ · new supply-driven</div>
+      </div>
+      <div class="card dark">
+        <div class="fp-overline">Port Region asking rent</div>
+        <div class="fp-kpi">$18.85/SF</div>
+        <div class="fp-caption">Highest in New Jersey — 13.0% above market</div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="two-col">
+        <div class="chart-card">
+          <div class="fp-body-heading" style="font-size:11px;">Asking rent hierarchy, Port Region vs. NJ</div>
+          <div class="bars" id="chart-rent"></div>
+          <div class="legend">
+            <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-1)"></span>Port Region · Class A</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-2)"></span>Port Region · overall</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--fp-viz-3)"></span>NJ market average</span>
+          </div>
+          <p class="fp-caption">NJ market average of ~$16.68/SF is derived from the stated 13.0% Port Region premium. Class A rent +7.1% YoY despite rising overall vacancy — modern, well-located space keeps pricing power.</p>
+        </div>
+        <div class="chart-card">
+          <div class="fp-body-heading" style="font-size:11px;">Notable H1 2026 leasing</div>
+          <div class="notable-list">
+            <div class="notable-item"><b>Ready Warehousing &amp; Logistics</b> — 92,000 SF new lease, 100 Lincoln Highway, Kearny</div>
+            <div class="notable-item"><b>iCube Global</b> — +78,142 SF expansion, 169 Pulaski St, Bayonne (adds to a 255,069 SF 2025 lease)</div>
+            <div class="notable-item"><b>HelloFresh</b> — 352,100 SF renewal, 60 Lister Ave, Newark</div>
+            <div class="notable-item">YTD renewal volume: <b>832,008 SF</b>, +24.5% YoY</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+      <div style="max-width:540px;">
+        <div class="fp-overline" style="color:var(--fp-fg4);">The pivot</div>
+        <div style="font-family:var(--fp-font-display); font-weight:500; font-size:32px; color:var(--fp-fg2); line-height:1.18; margin:8px 0 12px;">Vacancy is up.<br><span style="color:var(--fp-signal-orange);">Demand isn't down.</span></div>
+        <p class="fp-body" style="font-size:11.5px; color:var(--fp-fg3); line-height:1.55;">Port Region vacancy rose 110 bps this quarter — that's a big-box supply story (nearly 1.0 msf of new large-format vacant space), not a demand story: leasing is still up 9.8% YoY, and Class A rent is up 7.1%.</p>
+        <p class="fp-body" style="font-size:11.5px; color:var(--fp-fg2); font-weight:500; line-height:1.55; margin-top:10px;">The following pages show why shallow bay specifically is structurally insulated from that supply wave, where that shows up on the ground, and how Faropoint's own house view and 2026 acquisition record underwrite the difference.</p>
+      </div>
+    </section>
+
+    <div class="page-footer">
+      <p class="fp-caption">Source: Cushman &amp; Wakefield, <i>H1 2026 Port of New York &amp; New Jersey Report</i> (Instant Insight).</p>
+      <p class="fp-caption">Faropoint</p>
+    </div>
+  </div>
+
+  <!-- ================= PAGE 3 — WHY SHALLOW BAY ================= -->
+  <div class="page">
+    <div class="doc-header">
+      <img src="./assets/FP-logo.svg" alt="Faropoint">
+      <div class="meta">
+        <div class="fp-overline">LPAC Investor Tour — Northeast</div>
+        <div class="fp-caption">H1 2026 · Why shallow bay</div>
+      </div>
+    </div>
+
+    <header>
+      <h1 class="fp-headline doc-size"><span class="fp-headline-section">Why shallow bay</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">The structural case — and where it shows up regionally</span></h1>
+      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">Port proximity is one input, not the whole case. Six structural drivers explain why shallow bay specifically captures a disproportionate share of port-driven demand, regardless of any single trade cycle.</p>
+    </header>
+
+    <section class="block">
+      <div class="thesis-grid">
+        <div class="flow-card">
+          <div class="step"><span class="num">1</span><span class="fp-body-heading">Last-mile, not just port-adjacent</span></div>
+          <p>Final-mile parcel and distribution demand is driven by dense population and same-day delivery expectations — a driver independent of ocean-freight cycles.</p>
+        </div>
+        <div class="flow-card">
+          <div class="step"><span class="num">2</span><span class="fp-body-heading">Land that can't be replaced</span></div>
+          <p>Under-construction inventory is ~4x higher in big box (2.6% of stock) than last-mile (0.6%) — zoning and land cost structurally cap new shallow-bay supply (Faropoint Research).</p>
+        </div>
+        <div class="flow-card">
+          <div class="step"><span class="num">3</span><span class="fp-body-heading">Granular, diversified tenancy</span></div>
+          <p>Dozens of small, service-oriented tenants per roll — trades, light manufacturing, distribution — spread credit and re-tenanting risk versus one large user.</p>
+        </div>
+        <div class="flow-card">
+          <div class="step"><span class="num">4</span><span class="fp-body-heading">Rents — and yields — mark to market faster</span></div>
+          <p>Shorter lease terms let owners reprice more often; the same dynamic shows in cap rates — urban logistics (20–100K SF) trades ~70 bps wide of big box (Faropoint Research).</p>
+        </div>
+        <div class="flow-card">
+          <div class="step"><span class="num">5</span><span class="fp-body-heading">Fragmented ownership, our entry point</span></div>
+          <p>79% of the 20–100K SF universe ($1.1T sector, avg. asset value $5M) is privately owned — a durable, largely un-institutionalized acquisition pipeline (Faropoint Research).</p>
+        </div>
+        <div class="flow-card hero">
+          <div class="step"><span class="num">6</span><span class="fp-body-heading">Demand from more than one source</span></div>
+          <p>Population growth, reshoring of light manufacturing and local service businesses all draw on the same infill space — insulating it from any single macro shock.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+      <div style="max-width:560px;">
+        <div class="fp-overline" style="color:var(--fp-fg4);">The pattern, geographically</div>
+        <div style="font-family:var(--fp-font-display); font-weight:500; font-size:28px; color:var(--fp-fg2); line-height:1.2; margin:8px 0 12px;">Six drivers. <span style="color:var(--fp-signal-orange);">One corridor.</span></div>
+        <p class="fp-body" style="font-size:11.5px; color:var(--fp-fg3); line-height:1.55;">Every driver above is a national argument for the format — but it plays out locally, tied to where people actually live and where port volume actually lands. The next page maps that demand across the corridor, from Washington DC to the Hudson Valley.</p>
+      </div>
+    </section>
+
+    <div class="page-footer">
+      <p class="fp-caption">Source: Faropoint Research, <i>Market Pulse H1 2026</i> (internal, FarOS + CoStar).</p>
+      <p class="fp-caption">Faropoint</p>
+    </div>
+  </div>
+
+  <!-- ================= PAGE 4 — WHY SHALLOW BAY, MAPPED ================= -->
+  <div class="page">
+    <div class="doc-header">
+      <img src="./assets/FP-logo.svg" alt="Faropoint">
+      <div class="meta">
+        <div class="fp-overline">LPAC Investor Tour — Northeast</div>
+        <div class="fp-caption">H1 2026 · Why shallow bay, mapped</div>
+      </div>
+    </div>
+
+    <header>
+      <h1 class="fp-headline doc-size"><span class="fp-headline-section">Why shallow bay</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">Mapped across the corridor</span></h1>
+      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">The same six drivers show up geographically — population density is the demand behind the format, from Washington DC to the Hudson Valley.</p>
+    </header>
+
+    <section class="block">
+      <div class="block-head">
+        <h2 class="fp-section-heading" style="font-size:16px;">The corridor, mapped: population density and port flow</h2>
+        <p class="fp-body" style="color:var(--fp-fg3); font-size:10.5px;">Real state geography, Long Island through Washington DC. Circle size and color both track total population — darker red reads as more people. Geography and tightness don't move together: Long Island and DC, at opposite ends of the map, run the tightest vacancy.</p>
+      </div>
+      <div class="chart-card">
+        <div class="realmap-wrap">
+          <div class="realmap" style="width:470px; height:490px;">
+            <svg viewBox="240 175 460 480" preserveAspectRatio="xMidYMid meet">
+              <defs>
+              <radialGradient id="hot0" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#FFCD79" stop-opacity="0.6"></stop>
+              <stop offset="100%" stop-color="#FFCD79" stop-opacity="0"></stop>
+              </radialGradient>
+              <radialGradient id="hot1" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#FFAB1F" stop-opacity="0.6"></stop>
+              <stop offset="100%" stop-color="#FFAB1F" stop-opacity="0"></stop>
+              </radialGradient>
+              <radialGradient id="hot2" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#E07820" stop-opacity="0.6"></stop>
+              <stop offset="100%" stop-color="#E07820" stop-opacity="0"></stop>
+              </radialGradient>
+              <radialGradient id="hot3" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#C04E18" stop-opacity="0.6"></stop>
+              <stop offset="100%" stop-color="#C04E18" stop-opacity="0"></stop>
+              </radialGradient>
+              <radialGradient id="hot4" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#8C3015" stop-opacity="0.6"></stop>
+              <stop offset="100%" stop-color="#8C3015" stop-opacity="0"></stop>
+              </radialGradient>
+              </defs>
+              <rect x="240" y="175" width="460" height="480" fill="#eaf2f7"></rect>
+              <path d="M448.915,546.345L450.349,547.276L448.915,548.951ZM467.756,538.953L468.985,539.201L470.214,535.782L492.127,533.418L488.85,538.331L485.778,544.42L484.14,546.096L483.116,544.793L480.044,545.227L476.153,550.068L473.695,554.408L471.443,562.212L471.647,566.171L466.937,574.081L468.371,574.946L464.684,580.561L462.227,585.432L460.384,586.109L460.588,589.62L458.336,594.913L454.649,598.849L451.373,598.726L452.192,600.877L450.349,601.184L450.144,596.02L448.096,592.637L447.277,588.881L447.687,584.569L449.53,580.931L450.144,575.44L452.192,568.953L453.011,564.254L456.288,559.364L459.974,552.548L459.155,550.44L463.456,549.385L466.528,545.351L466.732,543.613L462.636,542.308ZM449.12,538.766L446.867,541.501L446.253,538.766ZM108.344,568.768L110.596,570.56L106.91,572.661L107.115,574.699L110.187,576.057L110.596,581.61L113.464,583.521L114.897,586.726L118.583,586.91L121.041,588.45L121.041,589.928L124.932,592.883L131.895,592.452L134.557,590.667L134.967,588.82L139.677,587.773L141.315,584.384L142.954,583.09L145.206,585.863L150.736,590.482L157.085,587.342L164.662,585.678L168.143,585.37L172.034,582.473L170.191,579.821L171.625,576.674L175.926,579.019L176.745,580.623L185.141,576.242L189.032,573.34L191.49,572.784L193.538,576.983L203.573,570.869L204.392,569.077L201.73,568.83L201.934,566.851L205.621,564.749L208.078,562.274L204.597,560.169L203.777,557.63L206.235,555.214L205.825,552.982L210.126,546.034L216.27,539.574L219.956,536.404L222.004,533.231L223.233,529.496L224.871,527.628L223.642,525.821L225.076,522.33L230.196,517.277L232.653,515.966L231.425,513.219L235.93,507.782L238.388,504.029L237.773,499.96L240.64,492.378L246.989,495.324L250.47,502.151L259.891,505.468L265.625,499.584L268.697,490.935L270.745,487.358L272.383,487.421L272.588,482.963L276.07,477.809L277.913,473.468L285.08,479.821L289.176,471.642L293.887,467.17L293.887,469.438L295.935,467.926L299.006,463.766L300.44,465.09L303.307,461.117L302.078,460.108L306.993,454.552L308.427,454.11L311.704,450.192L309.656,447.915L311.908,444.499L310.68,443.549L315.39,436.835L313.956,436.138L315.185,433.855L314.161,432.079L314.98,428.144L328.497,439.496L344.471,452.72L348.771,441.65L350.614,438.8L353.277,438.609L356.553,440.193L359.625,440.13L360.854,442.98L365.564,445.701L364.131,448.801L362.288,449.939L362.083,453.604L364.131,454.426L365.36,456.889L372.322,457.836L377.647,460.486L377.442,463.514L379.081,464.586L383.177,464.964L385.02,467.296L389.525,471.894L389.525,477.746L389.32,483.088L385.634,484.659L384.201,486.354L384.405,489.178L380.309,490.496L377.647,489.178L377.647,492.44L373.961,499.522L373.142,502.777L373.551,507.532L376.623,511.22L382.562,510.282L383.791,508.657L386.863,508.657L389.32,506.281L391.163,508.157L389.935,512.781L393.826,516.778L393.826,519.836L400.994,523.515L406.113,523.64L407.547,525.385L408.776,524.076L413.691,524.637L414.51,527.379L417.787,529.808L419.425,533.48L422.087,534.413L425.159,537.772L429.255,539.201L435.399,543.426L434.375,547.462L431.303,548.951L430.893,555.586L431.713,557.382L429.46,560.231L432.122,561.655L428.231,563.511L421.883,559.55L419.63,561.221L418.196,559.674L418.196,557.134L415.534,552.114L411.643,550.13L410.004,547.958L407.547,547.214L403.246,540.817L400.994,540.134L400.174,537.336L397.512,535.471L397.103,537.336L402.837,542.867L406.933,549.944L410.004,551.432L410.209,552.982L413.486,553.85L415.534,559.798L417.787,563.078L423.93,563.326L425.364,565.553L431.713,567.037L428.845,568.83L428.641,571.116L431.303,571.611L432.122,570.251L433.761,572.784L434.785,579.574L433.146,585.124L429.46,581.24L425.159,578.464L423.316,581.055L425.569,583.459L427.002,586.849L428.845,587.711L424.34,589.189L420.654,589.436L421.883,591.837L426.388,591.16L425.978,595.836L428.845,595.098L429.665,597.004L432.122,598.234L433.351,601.245L431.508,607.202L430.689,606.281L427.412,607.386L424.34,609.472L422.292,605.299L416.353,601.553L413.486,598.787L414.305,595.836L411.643,591.467L407.137,592.021L405.499,593.56L403.451,590.729L399.765,590.051L398.946,588.635L394.645,590.79L396.898,592.821L399.355,592.329L403.042,593.129L406.113,596.512L407.957,596.635L409.595,593.067L411.233,600.385L411.438,604.501L415.944,605.667L421.063,610.699L421.268,614.685L426.798,614.439L428.641,612.784L428.845,614.807L430.689,615.481L430.074,610.209L433.556,609.84L436.218,611.619L443.386,613.826L446.867,612.171L449.12,612.846L450.758,620.688L453.216,629.252L455.059,633.59L456.493,639.329L427.412,639.329L402.837,639.329L396.488,639.207L396.488,639.817L374.78,639.756L320.715,639.756L305.56,640L248.422,640L213.608,639.878L203.777,639.756L180.431,638.475L172.854,638.719L153.398,637.803L142.135,637.62L124.932,636.644L126.57,634.934L110.801,634.629L110.187,636.216L79.263,636.094L66.771,636.277L34.618,636.216L33.594,635.911L17.62,635.972L10.862,635.728L12.5,634.079L19.258,631.086L23.559,631.208L31.546,628.03L38.304,625.889L41.581,625.645L41.991,622.585L45.267,617.687L51.206,617.442L56.326,615.236L57.555,612.478L56.94,608.859L59.398,606.834L61.856,606.711L65.132,604.317L65.132,599.033L70.252,596.266L74.143,593.252L78.649,590.729L86.226,588.327Z" fill="#eef1f3" stroke="#c7ccd1" stroke-width="1"></path>
+              <path d="M449.12,538.766L446.253,538.766L446.048,534.289L447.687,532.547L449.939,535.035ZM443.386,526.32L443.795,521.395L446.048,520.584L447.482,522.455L448.506,529.808L445.434,528.5L446.253,526.818ZM426.183,479.255L427.207,477.997L428.231,480.889ZM250.47,409.253L312.932,409.125L361.264,409.316L392.187,409.316L416.353,409.253L460.793,409.189L460.793,414.666L465.913,497.455L466.323,501.964L481.477,502.527L502.981,502.589L502.776,505.28L500.933,511.844L499.909,512.781L495.813,525.946L492.127,533.418L470.214,535.782L468.985,539.201L467.756,538.953L465.094,537.088L461.203,537.336L456.697,541.314L454.854,541.377L454.649,537.212L456.083,532.858L459.565,531.115L456.083,530.991L456.493,528.188L458.745,525.696L454.445,525.136L451.987,527.192L451.168,525.447L452.192,521.831L457.517,520.147L456.288,517.714L454.445,518.525L453.626,516.278L456.697,509.282L453.626,510.782L452.192,513.718L452.192,517.464L450.554,517.527L448.301,512.719L450.554,512.157L450.349,508.845L448.71,508.219L447.891,511.282L446.048,513.344L447.277,515.03L445.434,518.9L444.615,517.09L441.133,518.525L439.29,517.776L436.013,512.594L434.17,511.782L434.58,509.095L429.665,499.647L433.761,498.77L434.785,496.327L433.146,496.766L431.303,493.569L432.941,491.061L435.399,489.68L436.628,491.249L439.085,489.618L439.29,491.876L443.795,492.44L446.458,494.885L447.277,494.259L444,489.931L440.519,489.053L438.88,486.417L437.447,486.605L434.17,481.769L433.146,483.528L430.689,482.272L430.484,485.977L429.05,485.475L429.665,479.129L433.351,473.342L436.218,476.173L437.856,475.544L437.242,467.737L435.604,466.666L432.122,469.627L429.665,469.375L429.869,472.398L427.412,473.468L428.231,466.918L431.508,460.549L432.941,463.766L437.242,464.46L439.495,462.505L438.266,459.098L440.519,455.626L437.242,456.194L436.628,459.477L437.447,461.433L434.989,460.36L435.604,456.384L434.375,452.657L432.941,451.772L436.218,443.17L438.676,440.51L438.266,438.99L441.133,437.405L442.567,435.06L448.71,435.44L446.458,433.919L450.144,429.477L448.096,429.096L450.554,421.346L443.386,422.872L442.157,425.921L444.615,427.446L445.434,429.477L442.976,430.366L436.013,436.518L434.58,434.553L436.013,431.127L434.375,429.35L434.375,432.142L432.532,435.377L434.17,437.532L432.737,440.447L431.508,434.362L428.436,433.475L429.665,440.003L428.026,439.496L426.798,442.157L429.255,443.549L424.954,446.334L423.521,448.105L420.859,447.599L420.449,445.954L415.944,443.043L416.558,445.954L418.401,446.777L418.811,449.37L424.34,452.783L424.75,457.015L423.726,458.593L426.388,461.622L421.678,464.46L423.111,466.792L422.497,469.312L420.654,469.06L419.22,472.524L420.449,475.859L416.967,479.506L418.811,482.648L418.401,486.04L419.63,490.621L419.22,496.202L420.654,500.273L425.159,505.28L426.798,509.157L424.954,511.969L422.087,511.532L423.93,514.156L425.774,512.781L427.412,513.656L425.978,516.591L426.798,519.586L430.484,525.322L429.46,526.693L430.484,532.733L428.641,531.551L426.388,527.939L424.75,527.69L423.726,523.702L422.087,524.263L421.678,527.815L420.244,525.447L418.606,525.634L417.582,522.642L415.124,519.836L410.414,518.401L403.246,518.213L401.608,510.157L399.97,509.345L399.15,511.282L401.198,515.529L400.789,516.903L396.283,514.218L395.874,512.094L393.211,510.157L390.754,503.028L386.658,505.78L379.9,509.282L377.442,507.594L376.009,500.398L378.262,495.261L381.333,491.688L385.429,489.806L384.405,489.178L384.201,486.354L385.634,484.659L389.32,483.088L389.525,477.746L396.898,470.32L389.32,462.883L385.02,467.296L383.177,464.964L379.081,464.586L377.442,463.514L377.647,460.486L372.322,457.836L365.36,456.889L364.131,454.426L362.083,453.604L362.288,449.939L364.131,448.801L365.564,445.701L360.854,442.98L359.625,440.13L356.553,440.193L353.277,438.609L350.614,438.8L348.566,437.912L349.795,433.919L348.771,431.191L346.928,430.429L347.338,428.335L343.447,425.731L340.989,421.346L344.266,420.392L344.266,418.039L341.399,418.294L337.917,416.83L334.231,418.103L332.593,415.557L329.111,412.438L324.196,411.164L318.462,416.703L314.571,415.239L312.728,417.594L309.86,416.894L312.113,418.93L309.451,418.866L310.884,421.982L308.017,424.397L302.283,424.143L300.85,422.999L297.368,423.062L293.272,420.901L292.863,419.248L290.2,418.103L292.863,417.212L290.2,416.576L282.418,426.62L280.165,430.048L274.431,427.763L272.178,427.636L269.516,432.396L263.168,436.201L261.12,440.447L258.662,440.383L251.904,446.903L249.856,447.346Z" fill="#eef1f3" stroke="#c7ccd1" stroke-width="1"></path>
+              <path d="M190.875,239.001L200.706,234.977L209.921,230.092L211.764,228.506L213.812,224.54L216.475,224.342L217.089,226.193L224.462,221.431L234.087,216.532L234.087,237.286L234.292,237.418L284.876,237.484L300.645,237.286L334.845,237.418L384.61,237.352L406.113,237.154L428.845,237.418L463.456,237.484L485.369,237.352L488.236,241.242L489.26,240.978L490.898,247.565L493.97,247.301L499.499,249.539L501.547,252.761L499.909,254.865L502.776,256.245L503.186,266.68L501.547,267.467L506.667,274.869L506.872,277.094L509.125,276.767L512.196,278.925L511.787,280.102L516.907,279.906L517.521,281.345L520.798,280.822L520.593,282.782L523.255,286.375L519.979,287.224L515.473,291.727L512.606,299.809L510.353,302.999L506.872,305.277L507.691,306.838L504.414,310.478L500.728,312.362L498.066,315.479L502.981,323.264L498.27,330.583L496.018,330.259L494.175,336.728L495.813,338.15L494.379,340.088L494.789,345.447L496.632,346.351L500.114,346.028L502.162,348.415L501.752,354.538L502.571,357.436L507.691,358.659L509.125,363.034L513.425,366.505L514.859,369.846L518.955,372.478L521.822,377.033L518.34,379.534L516.292,379.021L513.835,382.289L510.149,383.25L503.186,387.86L501.752,389.971L498.475,391.57L498.475,395.98L493.355,398.855L485.573,400.451L482.092,403.259L477.382,400.898L472.876,400.515L467.961,401.791L464.889,403.961L460.793,409.189L416.353,409.253L392.187,409.316L361.264,409.316L312.932,409.125L250.47,409.253L216.27,409.253L190.875,409.253L190.875,340.734Z" fill="#eef1f3" stroke="#c7ccd1" stroke-width="1"></path>
+              <path d="M592.271,233.459L595.343,233.393L619.508,234.317L630.567,234.515L630.362,237.484L633.229,237.088L633.844,234.515L642.445,234.911L646.951,234.647L688.319,235.505L688.524,236.693L688.524,243.746L689.138,258.347L689.138,268.188L688.524,281.867L686.066,282.39L686.681,287.355L685.042,289.248L683.609,288.008L680.127,287.877L675.826,289.444L672.14,289.248L669.478,290.814L666.201,288.987L664.972,291.401L654.938,293.684L654.323,292.379L651.251,292.379L645.722,294.531L644.493,293.162L639.168,293.097L637.735,294.792L634.049,293.292L625.857,295.053L625.242,291.14L623.399,292.249L619.508,297.594L617.051,297.594L612.545,302.348L609.883,300.851L604.968,304.626L603.534,303.78L598.824,305.602L599.848,307.033L597.8,309.113L591.861,309.828L587.356,313.337L585.513,312.362L582.441,314.635L582.645,312.492L578.55,305.862L592.476,297.399L588.584,291.075L589.404,280.56L590.428,261.236Z" fill="#eef1f3" stroke="#c7ccd1" stroke-width="1"></path>
+              <path d="M675.007,294.14L675.622,292.966L681.151,291.531L676.85,294.336ZM668.863,306.057L669.887,304.756L672.14,305.797L672.14,309.048L670.911,306.773ZM664.768,299.614L668.044,298.572L665.587,301.372ZM558.889,339.055L559.913,343.382L558.07,345.899L550.288,350.93L548.035,350.994L548.65,347.77L550.493,346.738L551.312,341.316ZM427.412,91.18L430.689,87.779L429.665,90.84ZM422.906,89.888L425.364,87.166L427.207,87.507ZM234.087,216.532L240.845,213.02L251.699,205.656L257.638,199.612L263.782,196.287L269.107,194.624L271.359,189.964L274.022,187.566L274.841,184.099L282.213,180.363L286.104,176.758L285.285,171.413L282.623,168.738L283.033,165.86L281.599,163.383L276.889,161.038L277.094,154.87L273.407,153.863L275.25,148.694L274.226,140.289L273.612,139.414L279.346,137.933L287.128,135.105L298.597,131.937L306.789,130.589L313.547,130.454L321.329,131.061L328.701,130.521L346.314,133.353L351.024,134.633L354.096,137.799L358.806,140.895L361.264,141.568L369.455,138.27L376.623,138.203L385.429,137.395L389.73,138.674L394.44,138.741L397.307,137.058L403.451,135.711L407.137,133.016L408.981,132.948L412.872,127.553L419.015,123.233L421.063,122.693L424.954,119.044L427.822,118.706L431.917,119.72L435.399,118.435L437.242,114.851L437.652,108.961L435.808,96.752L431.713,94.035L433.965,90.636L436.832,89.888L437.242,92.132L441.543,89.344L440.928,86.418L437.037,83.218L432.532,84.239L433.556,82.264L430.484,78.788L427.412,78.72L427.617,73.263L430.893,65.407L434.785,65.065L439.495,62.193L439.495,58.907L443.181,57.401L448.71,53.633L450.554,53.975L453.83,51.987L458.95,46.842L459.769,43.684L462.227,40.179L470.623,31.854L476.972,24.963L488.44,15.229L488.236,14.4L502.162,6.859L507.486,2.565L511.172,2.565L515.678,0L521.207,2.01L525.098,1.317L543.735,1.872L554.589,1.941L576.502,0.971L581.417,1.04L600.462,0.347L600.667,7.898L599.234,9.974L598.415,14.33L601.077,18.269L599.029,22.066L598.619,28.41L597.8,30.546L598.619,35.365L602.51,41.416L603.33,46.156L600.872,51.645L602.306,59.455L601.486,61.919L597.595,66.227L596.571,72.307L594.933,77.697L596.776,79.538L596.571,86.554L598.619,91.112L597.595,95.462L600.053,99.332L596.776,105.912L595.343,113.633L597.391,115.392L598.824,110.925L602.715,110.925L603.125,114.513L605.787,116.474L605.378,139.616L604.149,167.935L604.149,172.883L603.33,175.356L604.968,179.696L598.005,204.528L591.042,230.686L592.271,233.459L590.428,261.236L589.404,280.56L588.584,291.075L592.476,297.399L578.55,305.862L582.645,312.492L582.441,314.635L581.007,317.362L576.706,320.087L576.297,325.208L573.635,325.078L575.478,328.965L579.164,323.329L581.417,324.301L583.465,321.578L587.765,319.827L591.452,319.697L592.271,317.556L596.776,319.503L597.186,316.843L599.029,318.66L603.125,319.179L606.811,320.67L611.521,318.854L611.931,316.064L615.412,315.544L617.46,316.323L632.82,316.129L640.807,314.83L643.674,313.661L649.818,309.568L651.661,306.968L654.118,306.122L656.781,302.869L661.081,301.502L663.539,301.632L659.853,305.016L658.009,305.407L661.081,307.423L662.105,310.283L665.587,311.063L667.84,309.438L671.116,314.116L674.188,313.012L678.898,309.893L679.308,308.073L682.789,307.358L685.247,308.138L684.223,309.503L670.502,315.609L654.528,323.588L644.288,327.605L627.7,333.624L616.846,338.667L608.04,341.316L602.51,342.091L601.282,341.122L588.175,344.996L575.682,344.35L566.262,347.899L566.876,345.447L562.166,345.576L562.78,343.963L560.528,341.445L561.961,339.184L560.323,336.857L561.552,335.435L562.371,331.23L564.828,327.022L568.924,314.895L568.31,313.661L541.277,297.66L523.255,286.375L520.593,282.782L520.798,280.822L517.521,281.345L516.907,279.906L511.787,280.102L512.196,278.925L509.125,276.767L506.872,277.094L506.667,274.869L501.547,267.467L503.186,266.68L502.776,256.245L499.909,254.865L501.547,252.761L499.499,249.539L493.97,247.301L490.898,247.565L489.26,240.978L488.236,241.242L485.369,237.352L463.456,237.484L428.845,237.418L406.113,237.154L384.61,237.352L334.845,237.418L300.645,237.286L284.876,237.484L234.292,237.418L234.087,237.286Z" fill="#eef1f3" stroke="#c7ccd1" stroke-width="1"></path>
+              <path d="M473.9,416.003L474.105,417.785L473.9,416.003ZM460.793,409.189L464.889,403.961L467.961,401.791L472.876,400.515L477.382,400.898L482.092,403.259L479.634,405.938L478.61,409.826L476.767,411.865L475.538,411.419L471.033,416.576L471.443,419.057L473.695,421.028L473.9,424.143L472.262,425.921L472.262,428.525L475.129,431.825L476.562,435.504L480.863,439.433L482.911,443.739L483.525,447.409L482.501,449.623L482.911,457.583L486.188,460.613L487.621,463.325L488.031,467.989L494.994,476.614L498.27,478.437L500.318,476.928L501.138,479.192L502.162,487.296L502.981,502.589L481.477,502.527L466.323,501.964L465.913,497.455L460.793,414.666Z" fill="#eef1f3" stroke="#c7ccd1" stroke-width="1"></path>
+              <path d="M473.9,416.003L476.767,411.865L478.61,409.826L479.634,405.938L482.092,403.259L485.573,400.451L493.355,398.855L498.475,395.98L498.475,391.57L501.752,389.971L503.186,387.86L510.149,383.25L513.835,382.289L516.292,379.021L518.34,379.534L521.822,377.033L518.955,372.478L514.859,369.846L513.425,366.505L509.125,363.034L507.691,358.659L502.571,357.436L501.752,354.538L502.162,348.415L500.114,346.028L496.632,346.351L494.789,345.447L494.379,340.088L495.813,338.15L494.175,336.728L496.018,330.259L498.27,330.583L502.981,323.264L498.066,315.479L500.728,312.362L504.414,310.478L507.691,306.838L506.872,305.277L510.353,302.999L512.606,299.809L515.473,291.727L519.979,287.224L523.255,286.375L541.277,297.66L568.31,313.661L568.924,314.895L564.828,327.022L562.371,331.23L561.552,335.435L560.323,336.857L558.889,339.055L551.312,341.316L550.493,346.738L548.65,347.77L548.035,350.994L548.035,353.765L551.926,355.569L555.203,354.409L560.118,357.243L562.985,357.822L563.804,354.989L564.624,360.783L564.009,367.662L561.142,379.342L558.48,395.15L557.456,406.193L549.264,421.537L547.011,424.587L545.168,425.159L545.783,427.192L543.735,430.683L539.639,434.68L539.434,435.884L533.085,439.37L526.532,446.207L522.231,453.668L517.726,463.073L513.63,466.855L509.739,467.737L507.486,466.855L508.715,461.307L511.787,455.184L512.401,450.824L508.101,448.484L504.414,448.232L503.186,446.65L499.499,446.84L498.066,449.117L496.223,447.599L495.813,444.625L492.127,442.283L491.512,440.383L489.464,441.143L486.392,436.835L484.959,437.342L481.273,433.665L479.225,430.112L475.334,428.525L476.562,419.629L474.105,417.785Z" fill="var(--fp-orange-100)" stroke="#c7ccd1" stroke-width="1"></path>
+              <path d="M385.02,467.296L389.32,462.883L396.898,470.32L389.525,477.746L389.525,471.894Z" fill="var(--fp-signal-orange)" stroke="#c7ccd1" stroke-width="1"></path>
+              <path d="M 554.71,338.6 L 537.25,351.9 L 496.44,392.05 L 413.88,441.1 L 389.65,469.28" fill="none" stroke="var(--fp-blue-300)" stroke-width="2.5"></path>
+              <line x1="554.71" y1="338.6" x2="554.37" y2="321.04" stroke="var(--fp-blue-300)" stroke-width="2.5"></line>
+              <line x1="554.71" y1="338.6" x2="625.69" y2="330.09" stroke="var(--fp-blue-300)" stroke-width="2.5"></line>
+              <line x1="554.71" y1="338.6" x2="566.92" y2="261.81" stroke="var(--fp-blue-300)" stroke-width="2.5"></line>
+              <line x1="625.69" y1="330.09" x2="600.01" y2="299.86" stroke="var(--fp-blue-300)" stroke-width="2.5"></line>
+              <line x1="554.71" y1="338.6" x2="567.49" y2="336.12" stroke="var(--fp-blue-300)" stroke-width="2.5"></line>
+              <circle cx="567.49" cy="336.12" r="48.0" fill="url(#hot4)"></circle>
+              <circle cx="389.65" cy="469.28" r="42.3" fill="url(#hot3)"></circle>
+              <circle cx="496.44" cy="392.05" r="42.0" fill="url(#hot3)"></circle>
+              <circle cx="566.92" cy="261.81" r="30.8" fill="url(#hot2)"></circle>
+              <circle cx="625.69" cy="330.09" r="30.4" fill="url(#hot2)"></circle>
+              <circle cx="413.88" cy="441.1" r="30.1" fill="url(#hot2)"></circle>
+              <circle cx="554.37" cy="321.04" r="27.5" fill="url(#hot1)"></circle>
+              <circle cx="537.25" cy="351.9" r="25.6" fill="url(#hot1)"></circle>
+              <circle cx="600.01" cy="299.86" r="20.0" fill="url(#hot0)"></circle>
+              <circle cx="554.71" cy="338.6" r="11" fill="var(--fp-blue-800)" stroke="#fff" stroke-width="2"></circle>
+              <text x="554.71" y="342.6" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial,sans-serif">1</text>
+              <circle cx="554.37" cy="321.04" r="11" fill="#FFAB1F" stroke="#fff" stroke-width="2"></circle>
+              <text x="554.37" y="325.04" font-size="11" font-weight="700" fill="var(--fp-charcoal)" text-anchor="middle" font-family="Arial,sans-serif">2</text>
+              <circle cx="537.25" cy="351.9" r="11" fill="#FFAB1F" stroke="#fff" stroke-width="2"></circle>
+              <text x="537.25" y="355.9" font-size="11" font-weight="700" fill="var(--fp-charcoal)" text-anchor="middle" font-family="Arial,sans-serif">3</text>
+              <circle cx="625.69" cy="330.09" r="11" fill="#E07820" stroke="#fff" stroke-width="2"></circle>
+              <text x="625.69" y="334.09" font-size="11" font-weight="700" fill="var(--fp-charcoal)" text-anchor="middle" font-family="Arial,sans-serif">5</text>
+              <circle cx="496.44" cy="392.05" r="11" fill="#C04E18" stroke="#fff" stroke-width="2"></circle>
+              <text x="496.44" y="396.05" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial,sans-serif">8</text>
+              <circle cx="413.88" cy="441.1" r="11" fill="#E07820" stroke="#fff" stroke-width="2"></circle>
+              <text x="413.88" y="445.1" font-size="11" font-weight="700" fill="var(--fp-charcoal)" text-anchor="middle" font-family="Arial,sans-serif">9</text>
+              <circle cx="389.65" cy="469.28" r="11" fill="#C04E18" stroke="#fff" stroke-width="2"></circle>
+              <text x="389.65" y="473.28" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial,sans-serif">10</text>
+              <circle cx="566.92" cy="261.81" r="11" fill="#E07820" stroke="#fff" stroke-width="2"></circle>
+              <text x="566.92" y="265.81" font-size="11" font-weight="700" fill="var(--fp-charcoal)" text-anchor="middle" font-family="Arial,sans-serif">6</text>
+              <circle cx="600.01" cy="299.86" r="11" fill="#FFAB1F" stroke="#fff" stroke-width="2"></circle>
+              <text x="600.01" y="303.86" font-size="11" font-weight="700" fill="var(--fp-charcoal)" text-anchor="middle" font-family="Arial,sans-serif">7</text>
+              <circle cx="567.49" cy="336.12" r="11" fill="#8C3015" stroke="#fff" stroke-width="2"></circle>
+              <text x="567.49" y="340.12" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial,sans-serif">4</text>
+              </svg>
+          </div>
+        </div>
+        <div class="map-legend-grid">
+          <div class="map-legend-col">
+            <div class="lg-row"><span class="lg-num">1</span><span class="lg-name">Port of NY/NJ</span><span class="lg-pop">origin</span><span class="lg-detail">4.4M TEU, H1 2026</span></div>
+              <div class="lg-row"><span class="lg-num">2</span><span class="lg-name">Northern NJ</span><span class="lg-pop">2.28M</span><span class="lg-detail">90.7% occ. / 9.3% vac.</span></div>
+              <div class="lg-row"><span class="lg-num">3</span><span class="lg-name">Central NJ</span><span class="lg-pop">1.90M</span><span class="lg-detail">90.7% occ. / 9.3% vac.</span></div>
+              <div class="lg-row"><span class="lg-num">4</span><span class="lg-name">New York City</span><span class="lg-pop">8.59M</span><span class="lg-detail">5 boroughs; vacancy not sourced</span></div>
+              <div class="lg-row"><span class="lg-num">5</span><span class="lg-name">Long Island</span><span class="lg-pop">2.93M</span><span class="lg-detail">93.0% occ. / 7.0% vac.</span></div>
+          </div>
+          <div class="map-legend-col">
+            <div class="lg-row"><span class="lg-num">6</span><span class="lg-name">Hudson Valley</span><span class="lg-pop">3.01M</span><span class="lg-detail">vacancy not sourced</span></div>
+              <div class="lg-row"><span class="lg-num">7</span><span class="lg-name">Fairfield County, CT</span><span class="lg-pop">0.97M</span><span class="lg-detail">vacancy not sourced</span></div>
+              <div class="lg-row"><span class="lg-num">8</span><span class="lg-name">Philadelphia</span><span class="lg-pop">6.33M</span><span class="lg-detail">89.7% occ. / 10.3% vac.</span></div>
+              <div class="lg-row"><span class="lg-num">9</span><span class="lg-name">Baltimore</span><span class="lg-pop">2.85M</span><span class="lg-detail">91.5% occ. / 8.5% vac.</span></div>
+              <div class="lg-row"><span class="lg-num">10</span><span class="lg-name">Washington DC metro</span><span class="lg-pop">6.44M</span><span class="lg-detail">92.6% occ. / 7.4% vac.</span></div>
+          </div>
+        </div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#FFCD79"></span>&lt;1.5M</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#FFAB1F"></span>1.5–2.5M</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#E07820"></span>2.5–4M</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#C04E18"></span>4–7M</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#8C3015"></span>7M+</span>
+        </div>
+        <p class="fp-caption">Illustrative — state outlines are real (U.S. Census TIGER/us-atlas), city positions approximate. Population: U.S. Census Bureau / NYC Dept. of City Planning, 2024–2025 estimates. Vacancy: all-industrial-size (CBRE/Newmark/Cushman &amp; Wakefield); Faropoint's own 20–100K SF segment runs tighter still — 5.9% Northern NJ, 4.6% Philadelphia (see Faropoint's thesis).</p>
+      </div>
+    </section>
+
+    <div class="page-footer">
+      <p class="fp-caption">Sources: Cushman &amp; Wakefield <i>H1 2026 Port of New York &amp; New Jersey Report</i>; CBRE / Cushman &amp; Wakefield national small-bay research; Faropoint Research, <i>Market Pulse H1 2026</i>; U.S. Census Bureau / NYC Dept. of City Planning.</p>
+      <p class="fp-caption">Faropoint</p>
+    </div>
+  </div>
+
+  <!-- ================= PAGE 6 — FAROPOINT'S NORTHEAST FOOTPRINT ================= -->
+  <div class="page">
+    <div class="doc-header">
+      <img src="./assets/FP-logo.svg" alt="Faropoint">
+      <div class="meta">
+        <div class="fp-overline">LPAC Investor Tour — Northeast</div>
+        <div class="fp-caption">H1 2026 · Faropoint's footprint</div>
+      </div>
+    </div>
+
+    <header>
+      <h1 class="fp-headline doc-size"><span class="fp-headline-section">Faropoint's footprint</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">Where the Northeast platform actually sits</span></h1>
+      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">The same corridor from the population-density map — but here it's Faropoint's own debt-financed properties, not market demand, doing the pinning.</p>
+    </header>
+
+    <section class="block">
+      <div class="chart-card">
+        <div class="two-col" style="grid-template-columns:360px 1fr;">
+          <div class="realmap-wrap">
+            <div class="realmap" style="width:340px; height:340px;">
+              <svg viewBox="430 270 280 280" preserveAspectRatio="xMidYMid meet">
+                <rect x="430" y="270" width="280" height="280" fill="#eaf2f7"></rect>
+                <path d="M448.915,546.345L450.349,547.276L448.915,548.951ZM467.756,538.953L468.985,539.201L470.214,535.782L492.127,533.418L488.85,538.331L485.778,544.42L484.14,546.096L483.116,544.793L480.044,545.227L476.153,550.068L473.695,554.408L471.443,562.212L471.647,566.171L466.937,574.081L468.371,574.946L464.684,580.561L462.227,585.432L460.384,586.109L460.588,589.62L458.336,594.913L454.649,598.849L451.373,598.726L452.192,600.877L450.349,601.184L450.144,596.02L448.096,592.637L447.277,588.881L447.687,584.569L449.53,580.931L450.144,575.44L452.192,568.953L453.011,564.254L456.288,559.364L459.974,552.548L459.155,550.44L463.456,549.385L466.528,545.351L466.732,543.613L462.636,542.308ZM449.12,538.766L446.867,541.501L446.253,538.766Z" fill="var(--fp-orange-100)" stroke="#c7ccd1" stroke-width="1"></path>
+                <path d="M473.9,416.003L474.105,417.785L473.9,416.003ZM460.793,409.189L464.889,403.961L467.961,401.791L472.876,400.515L477.382,400.898L482.092,403.259L479.634,405.938L478.61,409.826L476.767,411.865L475.538,411.419L471.033,416.576L471.443,419.057L473.695,421.028L473.9,424.143L472.262,425.921L472.262,428.525L475.129,431.825L476.562,435.504L480.863,439.433L482.911,443.739L483.525,447.409L482.501,449.623L482.911,457.583L486.188,460.613L487.621,463.325L488.031,467.989L494.994,476.614L498.27,478.437L500.318,476.928L501.138,479.192L502.162,487.296L502.981,502.589L481.477,502.527L466.323,501.964L465.913,497.455L460.793,414.666Z" fill="#eef1f3" stroke="#c7ccd1" stroke-width="1"></path>
+                <path d="M473.9,416.003L476.767,411.865L478.61,409.826L479.634,405.938L482.092,403.259L485.573,400.451L493.355,398.855L498.475,395.98L498.475,391.57L501.752,389.971L503.186,387.86L510.149,383.25L513.835,382.289L516.292,379.021L518.34,379.534L521.822,377.033L518.955,372.478L514.859,369.846L513.425,366.505L509.125,363.034L507.691,358.659L502.571,357.436L501.752,354.538L502.162,348.415L500.114,346.028L496.632,346.351L494.789,345.447L494.379,340.088L495.813,338.15L494.175,336.728L496.018,330.259L498.27,330.583L502.981,323.264L498.066,315.479L500.728,312.362L504.414,310.478L507.691,306.838L506.872,305.277L510.353,302.999L512.606,299.809L515.473,291.727L519.979,287.224L523.255,286.375L541.277,297.66L568.31,313.661L568.924,314.895L564.828,327.022L562.371,331.23L561.552,335.435L560.323,336.857L558.889,339.055L551.312,341.316L550.493,346.738L548.65,347.77L548.035,350.994L548.035,353.765L551.926,355.569L555.203,354.409L560.118,357.243L562.985,357.822L563.804,354.989L564.624,360.783L564.009,367.662L561.142,379.342L558.48,395.15L557.456,406.193L549.264,421.537L547.011,424.587L545.168,425.159L545.783,427.192L543.735,430.683L539.639,434.68L539.434,435.884L533.085,439.37L526.532,446.207L522.231,453.668L517.726,463.073L513.63,466.855L509.739,467.737L507.486,466.855L508.715,461.307L511.787,455.184L512.401,450.824L508.101,448.484L504.414,448.232L503.186,446.65L499.499,446.84L498.066,449.117L496.223,447.599L495.813,444.625L492.127,442.283L491.512,440.383L489.464,441.143L486.392,436.835L484.959,437.342L481.273,433.665L479.225,430.112L475.334,428.525L476.562,419.629L474.105,417.785Z" fill="var(--fp-orange-100)" stroke="#c7ccd1" stroke-width="1"></path>
+                <line x1="554.71" y1="338.6" x2="554.37" y2="321.04" stroke="var(--fp-blue-300)" stroke-width="2"></line>
+                <line x1="554.71" y1="338.6" x2="537.25" y2="351.9" stroke="var(--fp-blue-300)" stroke-width="2"></line>
+                <line x1="537.25" y1="351.9" x2="496.44" y2="392.05" stroke="var(--fp-blue-300)" stroke-width="2"></line>
+                <circle cx="554.71" cy="338.6" r="7" fill="var(--fp-blue-800)" stroke="#fff" stroke-width="2"></circle>
+                <rect x="500" y="277" width="110" height="16" rx="4" fill="#fff" fill-opacity="0.9"></rect>
+                <text x="554.71" y="289" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" font-weight="700" fill="var(--fp-fg2)">Port of NY/NJ</text>
+                <circle cx="554.37" cy="321.04" r="21" fill="var(--fp-signal-orange)" stroke="#fff" stroke-width="2.5"></circle>
+                <text x="554.37" y="325.5" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#fff">17</text>
+                <circle cx="537.25" cy="351.9" r="15" fill="var(--fp-signal-orange)" stroke="#fff" stroke-width="2.5"></circle>
+                <text x="537.25" y="355.8" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">4</text>
+                <circle cx="496.44" cy="392.05" r="26" fill="var(--fp-signal-orange)" stroke="#fff" stroke-width="2.5"></circle>
+                <text x="496.44" y="397.5" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#fff">31</text>
+                <rect x="432" y="416" width="145" height="28" rx="4" fill="#fff" fill-opacity="0.9"></rect>
+                <text x="497.5" y="428" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">Philadelphia metro</text>
+                <text x="497.5" y="439" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="var(--fp-fg4)">incl. South Jersey (Burlington/Camden)</text>
+              </svg>
+            </div>
+            <div class="map-legend-grid" style="grid-template-columns:1fr; margin-top:6px;">
+              <div class="lg-row" style="grid-template-columns:20px 88px 1fr;"><span class="lg-num" style="background:var(--fp-signal-orange);">17</span><span class="lg-name">Northern NJ</span><span class="lg-detail">Bergen · Morris · Somerset</span></div>
+              <div class="lg-row" style="grid-template-columns:20px 88px 1fr;"><span class="lg-num" style="background:var(--fp-signal-orange);">4</span><span class="lg-name">Central NJ</span><span class="lg-detail">Mercer · Monmouth · Middlesex</span></div>
+              <div class="lg-row" style="grid-template-columns:20px 88px 1fr;"><span class="lg-num" style="background:var(--fp-signal-orange);">31</span><span class="lg-name">Philadelphia metro</span><span class="lg-detail">incl. South Jersey (Burlington/Camden)</span></div>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div class="fp-body-heading" style="font-size:11px;">~52 Northeast properties across Fund II &amp; III</div>
+            <div class="notable-list">
+              <div class="notable-item"><b>CoNA perm refi</b> — Fund II, $273M, 61 properties (25 in NJ/PA) — Bergen, Morris, Somerset, Burlington, Camden, Bucks &amp; Philadelphia Counties</div>
+              <div class="notable-item"><b>Project Diamond</b> — Fund II, $325M (CoNA/Citizens), 60 properties (~20 in NJ/PA) — Bergen, Mercer, Monmouth, Burlington, Camden, Gloucester &amp; Montgomery Counties</div>
+              <div class="notable-item"><b>NYL portfolio mortgage</b> — Fund III, ~$90M — Pearl Court (Allendale) &amp; McKee Drive (Mahwah), Bergen County</div>
+              <div class="notable-item"><b>BX Atlantic Connect</b> — Fund III, $223M, 24 assets (3 in NJ/PA) — Rockaway &amp; Wharton, Morris County; King of Prussia, Montgomery County</div>
+              <div class="notable-item"><b>Joyce Kilmer &amp; Swedesboro</b> — Fund III construction loans — New Brunswick (Middlesex) &amp; Swedesboro (Gloucester)</div>
+            </div>
+            <p class="fp-caption">Property counts and locations from executed loan agreements/schedules in Faropoint's debt-portfolio KB (Fund II &amp; III facilities), May 2026 — reflects loan-secured collateral identified with property-level addresses, not Faropoint's complete owned Northeast portfolio. Fund IV and ISLB facilities in the KB are secured by out-of-region collateral or lack property-level address data and aren't represented here.</p>
+          </div>
+        </div>
+        <p class="fp-caption" style="margin-top:2px;">Illustrative — state outlines are real (U.S. Census TIGER/us-atlas); cluster positions are submarket-level, not individual addresses. Compare against the population-density map on the previous page: Faropoint's own footprint concentrates precisely where port-driven demand is densest.</p>
+      </div>
+    </section>
+
+    <section class="block" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+      <div style="max-width:560px;">
+        <div class="fp-overline" style="color:var(--fp-fg4);">The platform, deployed</div>
+        <div style="font-family:var(--fp-font-display); font-weight:500; font-size:28px; color:var(--fp-fg2); line-height:1.2; margin:8px 0 12px;">Not a thesis on paper. <span style="color:var(--fp-signal-orange);">A portfolio on the ground.</span></div>
+        <p class="fp-body" style="font-size:11.5px; color:var(--fp-fg3); line-height:1.55;">These are financed, in-place assets — not a pipeline. The concentration in Northern NJ and the Philadelphia/South Jersey corridor is the same geography the port and population maps already pointed to, underwritten with Faropoint's own capital across three funds.</p>
+      </div>
+    </section>
+
+    <div class="page-footer">
+      <p class="fp-caption">Source: Faropoint Loan Portfolio KB — executed loan agreements &amp; schedules, Fund II/III facilities (May 2026).</p>
+      <p class="fp-caption">Faropoint</p>
+    </div>
+  </div>
+
+  <!-- ================= PAGE 7 — DISTRIBUTION CHANNELS ================= -->
+  <div class="page">
+    <div class="doc-header">
+      <img src="./assets/FP-logo.svg" alt="Faropoint">
+      <div class="meta">
+        <div class="fp-overline">LPAC Investor Tour — Northeast</div>
+        <div class="fp-caption">H1 2026 · Distribution channels</div>
+      </div>
+    </div>
+
+    <header>
+      <h1 class="fp-headline doc-size"><span class="fp-headline-section">Distribution channels</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">How goods reach their end use, regionally</span></h1>
+      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">Port volume doesn't arrive at one destination — it splits by mode, moves through bulk distribution, then fans out to five distinct end-use channels that all compete for the same shallow-bay space.</p>
+    </header>
+
+    <section class="block">
+      <div class="chart-card" style="padding:10px 14px;">
+        <div style="display:flex; justify-content:center;">
+          <svg viewBox="0 0 700 538" style="width:100%; max-width:620px; height:auto; display:block;">
+            <defs>
+              <marker id="flowArrow" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--fp-blue-800)"/>
+              </marker>
+              <marker id="flowArrowOrange" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--fp-signal-orange)"/>
+              </marker>
+              <marker id="flowArrowEmber" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="9.5" markerHeight="9.5" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--fp-viz-8)"/>
+              </marker>
+            </defs>
+
+            <!-- connectors: bold orthogonal tree, neutral trunk fanning into four accent colors, converging back to one orange -->
+            <g fill="none" stroke="var(--fp-blue-800)" stroke-width="2.75" stroke-linejoin="round">
+              <path d="M350,64 V95"/>
+              <path d="M190,95 H510"/>
+              <path d="M190,95 V130" marker-end="url(#flowArrow)"/>
+              <path d="M510,95 V130" marker-end="url(#flowArrow)"/>
+
+              <path d="M190,170 V198"/>
+              <path d="M510,170 V198"/>
+              <path d="M190,198 H510"/>
+              <path d="M350,198 V226" marker-end="url(#flowArrow)"/>
+
+              <path d="M350,274 V308"/>
+              <path d="M70,308 H630"/>
+              <path d="M70,308 V342" marker-end="url(#flowArrow)"/>
+              <path d="M210,308 V342" marker-end="url(#flowArrow)"/>
+              <path d="M350,308 V333" marker-end="url(#flowArrowEmber)"/>
+              <path d="M490,308 V342" marker-end="url(#flowArrow)"/>
+              <path d="M630,308 V342" marker-end="url(#flowArrow)"/>
+            </g>
+
+            <!-- five channels, five colors, converging into one orange trunk -->
+            <g fill="none" stroke-linejoin="round" stroke-linecap="round">
+              <path d="M70,378 V404 H348" stroke="var(--fp-viz-4)" stroke-width="2.75"/>
+              <path d="M210,378 V404 H348" stroke="var(--fp-viz-5)" stroke-width="2.75"/>
+              <path d="M350,387 V404" stroke="var(--fp-viz-8)" stroke-width="3.75"/>
+              <path d="M490,378 V404 H352" stroke="var(--fp-viz-7)" stroke-width="2.75"/>
+              <path d="M630,378 V404 H352" stroke="var(--fp-viz-6)" stroke-width="2.75"/>
+            </g>
+            <path d="M350,404 V430" fill="none" stroke="var(--fp-signal-orange)" stroke-width="3.5" stroke-linecap="round" marker-end="url(#flowArrowOrange)"/>
+
+            <circle cx="350" cy="460" r="58" fill="var(--fp-signal-orange)" opacity="0.10"/>
+            <circle cx="350" cy="460" r="42" fill="var(--fp-signal-orange)" opacity="0.16"/>
+
+            <!-- Port of NY/NJ -->
+            <circle cx="350" cy="40" r="24" fill="var(--fp-blue-800)"/>
+            <g transform="translate(338,28)" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="5" r="2.1"/>
+              <path d="M12 7.2v12.5"/>
+              <path d="M6.5 13H4a8 8 0 0016 0h-2.5"/>
+              <path d="M8 9.5L5 7.8M16 9.5l3-1.7"/>
+            </g>
+            <rect x="245" y="72" width="210" height="30" rx="5" fill="#fff" fill-opacity="0.9"/>
+            <text x="350" y="83" text-anchor="middle" font-family="Arial,sans-serif" font-size="11.5" font-weight="700" fill="var(--fp-fg2)">Port of NY/NJ</text>
+            <text x="350" y="96" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" fill="var(--fp-fg4)">4.4M TEU, H1 2026 — the origin</text>
+
+            <!-- Drayage & truck -->
+            <circle cx="190" cy="150" r="20" fill="#fff" stroke="var(--fp-blue-800)" stroke-width="2"/>
+            <g transform="translate(179,139)" stroke="var(--fp-blue-800)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2.5 7.5h10.5v8H2.5z"/>
+              <path d="M13 10.5h3.6l3 3v2h-6.6z"/>
+              <circle cx="6.3" cy="17.3" r="1.5"/>
+              <circle cx="16" cy="17.3" r="1.5"/>
+            </g>
+            <rect x="95" y="178" width="190" height="30" rx="5" fill="#fff" fill-opacity="0.9"/>
+            <text x="190" y="189" text-anchor="middle" font-family="Arial,sans-serif" font-size="10.5" font-weight="700" fill="var(--fp-fg2)">Drayage &amp; truck</text>
+            <text x="190" y="201" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="var(--fp-fg4)">&lt;50 mi — majority of moves</text>
+
+            <!-- Rail -->
+            <circle cx="510" cy="150" r="20" fill="#fff" stroke="var(--fp-blue-800)" stroke-width="2"/>
+            <g transform="translate(499,139)" stroke="var(--fp-blue-800)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5.5" y="3" width="13" height="13.5" rx="3"/>
+              <path d="M8 13.5h8"/>
+              <circle cx="8.7" cy="19" r="1.3"/>
+              <circle cx="15.3" cy="19" r="1.3"/>
+            </g>
+            <rect x="405" y="178" width="210" height="30" rx="5" fill="#fff" fill-opacity="0.9"/>
+            <text x="510" y="189" text-anchor="middle" font-family="Arial,sans-serif" font-size="10.5" font-weight="700" fill="var(--fp-fg2)">Rail</text>
+            <text x="510" y="201" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="var(--fp-fg4)">341,671 ctrs, H1 2026</text>
+
+            <!-- Regional bulk distribution -->
+            <circle cx="350" cy="250" r="24" fill="var(--fp-charcoal)"/>
+            <g transform="translate(338,238)" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2.5 9.5L12 3.5l9.5 6"/>
+              <path d="M4.5 8.5v11.5h15V8.5"/>
+              <rect x="9.7" y="12.5" width="4.6" height="7.5"/>
+            </g>
+            <rect x="235" y="279" width="230" height="30" rx="5" fill="#fff" fill-opacity="0.9"/>
+            <text x="350" y="290" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="var(--fp-fg2)">Regional bulk distribution</text>
+            <text x="350" y="303" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="var(--fp-fg4)">Cross-dock, big-box 200K+ SF</text>
+
+            <!-- E-commerce fulfillment -->
+            <circle cx="70" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-4)" stroke-width="2.5"/>
+            <g transform="translate(60,350)" stroke="var(--fp-viz-4)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2.5 6.5L12 2.5l9.5 4-9.5 4-9.5-4z"/>
+              <path d="M2.5 6.5v9.5l9.5 4 9.5-4V6.5"/>
+              <path d="M12 10.5v9.5"/>
+            </g>
+            <rect x="15" y="378" width="110" height="28" rx="5" fill="#fff" fill-opacity="0.9"/>
+            <text x="70" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">E-commerce</text>
+            <text x="70" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">fulfillment</text>
+
+            <!-- Wholesale & 3PL -->
+            <circle cx="210" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-5)" stroke-width="2.5"/>
+            <g transform="translate(200,350)" stroke="var(--fp-viz-5)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="8.5" width="14.5" height="3"/>
+              <rect x="3" y="13.5" width="14.5" height="3"/>
+              <path d="M5 8.5V5.5h10.5v3"/>
+            </g>
+            <rect x="155" y="378" width="110" height="28" rx="5" fill="#fff" fill-opacity="0.9"/>
+            <text x="210" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">Wholesale</text>
+            <text x="210" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">&amp; 3PL</text>
+
+            <!-- Last-mile logistics: emphasized — bigger, filled, glowing -->
+            <circle cx="350" cy="360" r="50" fill="var(--fp-viz-8)" opacity="0.09"/>
+            <circle cx="350" cy="360" r="36" fill="var(--fp-viz-8)" opacity="0.14"/>
+            <circle cx="350" cy="360" r="27" fill="var(--fp-viz-8)" stroke="#fff" stroke-width="3"/>
+            <g transform="translate(350,360) scale(1.35) translate(-12,-12)" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20.5C12 20.5 18.5 13.8 18.5 9.5C18.5 5.9 15.6 3 12 3C8.4 3 5.5 5.9 5.5 9.5C5.5 13.8 12 20.5 12 20.5Z"/>
+              <rect x="9.2" y="7" width="5.6" height="4.6" rx="0.6"/>
+              <path d="M9.2 9.3h5.6"/>
+            </g>
+            <rect x="282" y="390" width="136" height="32" rx="5" fill="#fff" fill-opacity="0.95" stroke="var(--fp-viz-8)" stroke-width="1"/>
+            <text x="350" y="404" text-anchor="middle" font-family="Arial,sans-serif" font-size="11.5" font-weight="700" fill="var(--fp-viz-8)">Last-mile logistics</text>
+            <text x="350" y="416" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" font-weight="600" fill="var(--fp-fg3)">final-mile parcel depots</text>
+
+            <!-- Light manufacturing & assembly -->
+            <circle cx="490" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-7)" stroke-width="2.5"/>
+            <g transform="translate(480,350)" stroke="var(--fp-viz-7)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3.4"/>
+              <path d="M12 4.5v2.5M12 17v2.5M4.5 12h2.5M17 12h2.5M6.8 6.8l1.8 1.8M15.4 15.4l1.8 1.8M17.2 6.8l-1.8 1.8M8.6 15.4l-1.8 1.8"/>
+            </g>
+            <rect x="435" y="378" width="110" height="28" rx="5" fill="#fff" fill-opacity="0.9"/>
+            <text x="490" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">Light mfg.</text>
+            <text x="490" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">&amp; assembly</text>
+
+            <!-- Trade services & contractors -->
+            <circle cx="630" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-6)" stroke-width="2.5"/>
+            <g transform="translate(620,350)" stroke="var(--fp-viz-6)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.2 5.8a4 4 0 00-5 5L3.5 17.5l3 3 6.8-6.8a4 4 0 005-5l-2.6 2.6-2.2-2.2z"/>
+            </g>
+            <rect x="565" y="378" width="130" height="28" rx="5" fill="#fff" fill-opacity="0.9"/>
+            <text x="630" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">Trade services</text>
+            <text x="630" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">&amp; contractors</text>
+
+            <!-- Shallow-bay hero: the one accent color, reserved for the destination -->
+            <circle cx="350" cy="460" r="33" fill="var(--fp-signal-orange)" stroke="#fff" stroke-width="2.5"/>
+            <g transform="translate(336,446)" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="14" cy="14" r="9.5"/>
+              <circle cx="14" cy="14" r="5"/>
+              <circle cx="14" cy="14" r="1.4" fill="#fff" stroke="none"/>
+            </g>
+            <text x="350" y="507" text-anchor="middle" font-family="Arial,sans-serif" font-size="12.5" font-weight="700" fill="var(--fp-fg2)">Shallow-bay infill, 20–100K SF</text>
+            <text x="350" y="520" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="var(--fp-fg4)">where every channel above ultimately competes for space</text>
+          </svg>
+        </div>
+        <p class="fp-caption" style="margin-top:4px; text-align:center;">Illustrative framework, not deal-level flow data — reflects typical last-mile distribution patterns for port-driven regional demand. Last-mile logistics is broken out as its own channel given the tour stop in the Meadowlands submarket — among the closest shallow-bay geographies to Manhattan and a prime final-mile location. Rail figure: Cushman &amp; Wakefield, <i>H1 2026 Port of New York &amp; New Jersey Report</i>.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="callout">
+        <b>The common denominator.</b> A parcel fulfillment center, a 3PL cross-dock, a final-mile delivery depot, a light assembly shop and an HVAC contractor's yard look nothing alike on paper — but all five need small, well-located, divisible space near the population they serve. That's the demand base underneath every shallow-bay acquisition.
+      </div>
+    </section>
+
+    <section class="block" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+      <div style="max-width:560px;">
+        <div class="fp-overline" style="color:var(--fp-fg4);">Underwriting the flow</div>
+        <div style="font-family:var(--fp-font-display); font-weight:500; font-size:28px; color:var(--fp-fg2); line-height:1.2; margin:8px 0 12px;">Five channels. <span style="color:var(--fp-signal-orange);">One thesis.</span></div>
+        <p class="fp-body" style="font-size:11.5px; color:var(--fp-fg3); line-height:1.55;">Faropoint doesn't underwrite a single tenant type — it underwrites the infill format every channel above ultimately needs. The final page shows how that shows up in Faropoint's own house view and 2026 acquisition record.</p>
+      </div>
+    </section>
+
+    <div class="page-footer">
+      <p class="fp-caption">Sources: Cushman &amp; Wakefield <i>H1 2026 Port of New York &amp; New Jersey Report</i>; Faropoint Research.</p>
+      <p class="fp-caption">Faropoint</p>
+    </div>
+  </div>
+
+  <!-- ================= PAGE 8 — WHY EVERY CHANNEL CONVERGES ON SHALLOW BAY ================= -->
+  <div class="page">
+    <div class="doc-header">
+      <img src="./assets/FP-logo.svg" alt="Faropoint">
+      <div class="meta">
+        <div class="fp-overline">LPAC Investor Tour — Northeast</div>
+        <div class="fp-caption">H1 2026 · Why every channel converges</div>
+      </div>
+    </div>
+
+    <header>
+      <h1 class="fp-headline doc-size"><span class="fp-headline-section">Distribution channels</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">Why every channel converges on shallow bay</span></h1>
+      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">None of the five channels on the previous page are actually competing on volume — they're competing on proximity and divisibility, and 20–100K SF is the format that satisfies both.</p>
+    </header>
+
+    <section class="block">
+      <div class="case-cols">
+        <div>
+          <div class="case-section">
+            <h3 class="fp-body-heading" style="display:flex; align-items:center; gap:6px;"><span style="display:inline-flex; width:15px; height:15px; border-radius:999px; background:var(--fp-viz-4); flex-shrink:0;"></span>E-commerce fulfillment</h3>
+            <p class="fp-body">Large-scale primary fulfillment does sit in big-box, but returns processing, regional sortation, and the long tail of smaller/niche sellers don't generate enough volume to fill 200K+ SF — and same-day/next-day promises push them toward space near the population they're shipping to, not toward the cheapest big parcel two hours away.</p>
+          </div>
+          <div class="case-section">
+            <h3 class="fp-body-heading" style="display:flex; align-items:center; gap:6px;"><span style="display:inline-flex; width:15px; height:15px; border-radius:999px; background:var(--fp-viz-5); flex-shrink:0;"></span>Wholesale &amp; 3PL</h3>
+            <p class="fp-body">Regional 3PLs serve a defined local client base and territory. Their footprint scales with that territory's demand, not with national throughput — so they need space sized to a region, not a continent, and they need it divisible so it can flex up or down as clients turn over.</p>
+          </div>
+          <div class="case-section">
+            <h3 class="fp-body-heading" style="display:flex; align-items:center; gap:6px;"><span style="display:inline-flex; width:15px; height:15px; border-radius:999px; background:var(--fp-viz-8); flex-shrink:0;"></span>Last-mile logistics</h3>
+            <p class="fp-body">This one is definitional: last-mile economics are won by minimizing drive time to the end customer, which means many small nodes near dense population beats one large node far away. A single 500K SF facility in Meadowlands wouldn't out-perform five 60K SF depots spread across it — density of locations matters more than size of any one location.</p>
+          </div>
+        </div>
+        <div>
+          <div class="case-section">
+            <h3 class="fp-body-heading" style="display:flex; align-items:center; gap:6px;"><span style="display:inline-flex; width:15px; height:15px; border-radius:999px; background:var(--fp-viz-7); flex-shrink:0;"></span>Light manufacturing &amp; assembly</h3>
+            <p class="fp-body">Kitting, packaging, light assembly of import components — these are small production operations, not heavy industry. They need modest space for a production line plus staging, want to be near their labor pool and near the port/rail input they're processing, and simply don't have the throughput to justify bulk-scale space.</p>
+          </div>
+          <div class="case-section">
+            <h3 class="fp-body-heading" style="display:flex; align-items:center; gap:6px;"><span style="display:inline-flex; width:15px; height:15px; border-radius:999px; background:var(--fp-viz-6); flex-shrink:0;"></span>Trade services &amp; contractors</h3>
+            <p class="fp-body">HVAC, plumbing, electrical, millwork. These are local service businesses by nature — they need a yard/warehouse to stage materials and park trucks in each market they serve, not one central depot. Real estate need is capped by "how much can one crew's territory support," which is small.</p>
+          </div>
+          <div class="case-section">
+            <h3 class="fp-body-heading">The structural reason</h3>
+            <p class="fp-body">It isn't just that these tenants <i>want</i> to be small — the supply of anything bigger is structurally rationed in these infill submarkets. Under-construction inventory runs ~4x higher for big-box (2.6% of stock) than for shallow bay (0.6%) because land cost and zoning cap new small-format supply near dense population.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="callout">
+        <b>Scarce land, shared appetite.</b> Five very different tenant types — none of them competing with each other directly — end up bidding for the same limited shallow-bay stock. That's the common denominator from the previous page, and the reason the diagram converges all five into one hero node instead of five separate outcomes.
+      </div>
+    </section>
+
+    <section class="block" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+      <div style="max-width:560px;">
+        <div class="fp-overline" style="color:var(--fp-fg4);">Volume vs. proximity</div>
+        <div style="font-family:var(--fp-font-display); font-weight:500; font-size:28px; color:var(--fp-fg2); line-height:1.2; margin:8px 0 12px;">Not who moves the most. <span style="color:var(--fp-signal-orange);">Who has to be closest.</span></div>
+        <p class="fp-body" style="font-size:11.5px; color:var(--fp-fg3); line-height:1.55;">Scarce, divisible, well-located space beats a bigger box every time for these five tenant types — which is exactly the corridor Faropoint underwrites. The final page turns that logic into Faropoint's own house view and 2026 acquisition record.</p>
+      </div>
+    </section>
+
+    <div class="page-footer">
+      <p class="fp-caption">Source: Faropoint Research, <i>Market Pulse H1 2026</i> (internal, FarOS + CoStar).</p>
+      <p class="fp-caption">Faropoint</p>
+    </div>
+  </div>
+
+  <!-- ================= PAGE 9 — FAROPOINT'S THESIS ================= -->
+  <div class="page">
+    <div class="doc-header">
+      <img src="./assets/FP-logo.svg" alt="Faropoint">
+      <div class="meta">
+        <div class="fp-overline">LPAC Investor Tour — Northeast</div>
+        <div class="fp-caption">H1 2026 · Faropoint's thesis</div>
+      </div>
+    </div>
+
+    <header>
+      <h1 class="fp-headline doc-size"><span class="fp-headline-section">Faropoint's thesis</span><span class="fp-headline-divider">|</span><span class="fp-headline-label">Underwriting the corridor</span></h1>
+      <p class="fp-headline-sub" style="font-size:10.5px; margin-top:2px;">Two Northeast/Mid-Atlantic markets, two different reasons for conviction — and a 2026 track record of acting on it.</p>
+    </header>
+
+    <section class="block">
+      <div class="block-head">
+        <h2 class="fp-section-heading" style="font-size:16px;">The house view: Northern New Jersey</h2>
+        <p class="fp-body" style="color:var(--fp-fg3); font-size:10.5px;">Faropoint's research team rates Northern New Jersey <b>Over-weight</b> among Gateway markets — near-term rent softness more than compensated by the widest Treasury spread in the set.</p>
+      </div>
+      <div class="chart-card">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div class="fp-body-heading" style="font-size:11px;">Northern New Jersey · Gateway market</div>
+          <span style="background:var(--fp-go); color:#fff; font-size:9px; font-weight:700; padding:2px 9px; border-radius:var(--fp-radius-pill); text-transform:uppercase; letter-spacing:0.3px;">Over-weight</span>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-stat"><div class="mini-num">$1.57B</div><div class="mini-label">FarOS H1 2026 volume seen, 141 deals (-4.7% QoQ)</div></div>
+          <div class="mini-stat"><div class="mini-num">6.3% / 7.2%</div><div class="mini-label">In-place / untrended cap rate, 20–100K SF</div></div>
+          <div class="mini-stat"><div class="mini-num">+185 bps</div><div class="mini-label">Treasury spread — widest of Faropoint's three Gateway markets</div></div>
+          <div class="mini-stat"><div class="mini-num">5.9%</div><div class="mini-label">Vacancy, 20–100K SF (+23 bps QoQ)</div></div>
+          <div class="mini-stat"><div class="mini-num">-2.3%</div><div class="mini-label">LTM rent growth — the near-term softness being priced</div></div>
+          <div class="mini-stat"><div class="mini-num">+2.62%</div><div class="mini-label">Expected 2-yr rent growth (2026–27) — the recovery being underwritten</div></div>
+        </div>
+        <p class="fp-caption">"FarOS volume seen" reflects deal flow tracked by Faropoint's sourcing platform across the market, not Faropoint's own closings. Source: Faropoint Research, <i>Market Pulse H1 2026</i>, House View — Gateway Markets.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <h2 class="fp-section-heading" style="font-size:16px;">Gateway vs. Value: two markets, two theses</h2>
+      </div>
+      <div class="chart-card">
+        <table class="data-table">
+          <caption>Faropoint House View — Northeast &amp; Mid-Atlantic markets, H1 2026 (20–100K SF)</caption>
+          <thead><tr><th>Market</th><th>FarOS deals</th><th>FarOS volume</th><th>In-place CR</th><th>Untrended CR</th><th>TSY spread</th><th>Vacancy</th><th>LTM rent gr.</th><th>Exp. 2-yr gr.</th><th>House view</th></tr></thead>
+          <tbody>
+            <tr class="hero"><td>Northern New Jersey</td><td>141</td><td>$1,573M</td><td>6.3%</td><td>7.2%</td><td>+185 bps</td><td>5.9%</td><td>−2.3%</td><td>+2.62%</td><td style="color:var(--fp-go); font-weight:700;">Over-weight</td></tr>
+            <tr><td>Philadelphia</td><td>90</td><td>$721M</td><td>6.2%</td><td>7.4%</td><td>+182 bps</td><td>4.6%</td><td>+7.8%</td><td>+2.88%</td><td style="color:var(--fp-alert); font-weight:700;">Under-weight</td></tr>
+          </tbody>
+        </table>
+        <p class="fp-caption">Northern New Jersey (Gateway) is Over-weight on pricing despite softer rents. Philadelphia (Value) is Under-weight despite the stronger rent print — its leasing spreads compressed sharply as outsized COVID-era gains normalize. Source: Faropoint Research, <i>Market Pulse H1 2026</i>.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <h2 class="fp-section-heading" style="font-size:16px;">Faropoint's New Jersey acquisition footprint, 2026 YTD</h2>
+      </div>
+      <div class="placeholder-grid">
+        <div class="placeholder-card" style="border-style:solid; background:var(--fp-bg-page);"><div class="fp-overline">Total deployed</div><div class="ph-value" style="color:var(--fp-fg2);">$65.5M</div></div>
+        <div class="placeholder-card" style="border-style:solid; background:var(--fp-bg-page);"><div class="fp-overline">Transactions</div><div class="ph-value" style="color:var(--fp-fg2);">5</div></div>
+        <div class="placeholder-card" style="border-style:solid; background:var(--fp-bg-page);"><div class="fp-overline">Buildings acquired</div><div class="ph-value" style="color:var(--fp-fg2);">5</div></div>
+        <div class="placeholder-card" style="border-style:solid; background:var(--fp-bg-page);"><div class="fp-overline">Avg. deal size</div><div class="ph-value" style="color:var(--fp-fg2);">$13.1M</div></div>
+        <div class="placeholder-card" style="border-style:solid; background:var(--fp-bg-page);"><div class="fp-overline">Avg. building size</div><div class="ph-value" style="color:var(--fp-fg2);">~60,000 SF</div></div>
+      </div>
+      <div class="placeholder-note" style="background:var(--fp-orange-100);">
+        <b>No. 1 buyer in the market by deal count.</b> Across 51 tracked NJ industrial, land and IOS deals in 2026 YTD, Faropoint led every buyer with 5 deals (9.8% of all deals; 19.2% of industrial-only). By dollar volume it ranks #11 ($65.5M, 3.2%) — a high-frequency, smaller-check strategy, not one built around trophy deals like Goodman's $360.0M Anheuser-Busch land buy.
+      </div>
+      <p class="fp-caption">NJ industrial only — Fund-level and other Mid-Atlantic totals unavailable this session.</p>
+    </section>
+
+    <section class="block">
+      <div class="callout">
+        <b>The thread.</b> The port drives regional industrial demand — shallow bay captures a disproportionate, structurally protected share of it — and Faropoint holds its highest Northeast conviction there, backed by a 2026 record as the market's No. 1 buyer by deal count.
+      </div>
+    </section>
+
+    <div class="page-footer">
+      <p class="fp-caption">Sources: Faropoint Research, <i>Market Pulse H1 2026</i> (internal); Cushman &amp; Wakefield Northeast Industrial Advisory Group, NJ sales data 2026 YTD, analysis prepared by Faropoint Acquisitions.</p>
+      <p class="fp-caption">Faropoint</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function renderBars(containerId, rows, max, compact) {
+    var el = document.getElementById(containerId);
+    rows.forEach(function(r) {
+      var pct = (r.value / max) * 100;
+      var row = document.createElement('div');
+      row.className = 'bar-row' + (compact ? ' compact' : '') + (r.hero ? ' hero' : '');
+      var trendHtml = r.trend ? '<div class="trend ' + r.trend.cls + '">' + r.trend.text + '</div>' : '';
+      row.innerHTML =
+        '<div class="name">' + r.name + '</div>' +
+        '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%; background:' + r.color + '"></div></div>' +
+        '<div class="value">' + r.display + (r.sub ? '<span class="sub">' + r.sub + '</span>' : '') + trendHtml + '</div>';
+      el.appendChild(row);
+    });
+  }
+
+  renderBars('chart-ports', [
+    { name: 'Los Angeles', value: 5.122603, display: '5.12M', sub: '21.0% share', color: 'var(--fp-viz-2)' },
+    { name: 'Long Beach', value: 4.829578, display: '4.83M', sub: '19.8% share', color: 'var(--fp-viz-2)' },
+    { name: 'New York/New Jersey', value: 4.427159, display: '4.43M', sub: '18.1% share', color: 'var(--fp-viz-1)', hero: true },
+    { name: 'Savannah', value: 2.837324, display: '2.84M', sub: '11.6% share', color: 'var(--fp-viz-3)' },
+    { name: 'Houston', value: 2.229473, display: '2.23M', sub: '9.1% share', color: 'var(--fp-viz-3)' },
+    { name: 'Virginia', value: 1.636588, display: '1.64M', sub: '6.7% share', color: 'var(--fp-viz-3)' }
+  ], 5.122603 * 1.05, true);
+
+  renderBars('chart-rent', [
+    { name: 'Port Region · Class A', value: 21.69, display: '$21.69', sub: '+7.1% YoY', color: 'var(--fp-viz-1)', hero: true },
+    { name: 'Port Region · overall', value: 18.85, display: '$18.85', sub: '+13.0% vs. NJ', color: 'var(--fp-viz-2)' },
+    { name: 'NJ market average', value: 16.68, display: '~$16.68', sub: 'derived', color: 'var(--fp-viz-3)' }
+  ], 21.69 * 1.1, true);
+</script>
+</body>
+</html>
