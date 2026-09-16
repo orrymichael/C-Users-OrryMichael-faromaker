@@ -683,6 +683,9 @@
               <marker id="flowArrowOrange" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
                 <path d="M0,0 L10,5 L0,10 Z" fill="var(--fp-signal-orange)"/>
               </marker>
+              <marker id="flowArrowEmber" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="9.5" markerHeight="9.5" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--fp-viz-8)"/>
+              </marker>
             </defs>
 
             <!-- connectors: bold orthogonal tree, neutral trunk fanning into four accent colors, converging back to one orange -->
@@ -701,18 +704,18 @@
               <path d="M70,308 H630"/>
               <path d="M70,308 V342" marker-end="url(#flowArrow)"/>
               <path d="M210,308 V342" marker-end="url(#flowArrow)"/>
-              <path d="M350,308 V342" marker-end="url(#flowArrow)"/>
+              <path d="M350,308 V333" marker-end="url(#flowArrowEmber)"/>
               <path d="M490,308 V342" marker-end="url(#flowArrow)"/>
               <path d="M630,308 V342" marker-end="url(#flowArrow)"/>
             </g>
 
             <!-- five channels, five colors, converging into one orange trunk -->
-            <g fill="none" stroke-width="2.75" stroke-linejoin="round" stroke-linecap="round">
-              <path d="M70,378 V404 H348" stroke="var(--fp-viz-4)"/>
-              <path d="M210,378 V404 H348" stroke="var(--fp-viz-5)"/>
-              <path d="M350,378 V404" stroke="var(--fp-viz-8)"/>
-              <path d="M490,378 V404 H352" stroke="var(--fp-viz-7)"/>
-              <path d="M630,378 V404 H352" stroke="var(--fp-viz-6)"/>
+            <g fill="none" stroke-linejoin="round" stroke-linecap="round">
+              <path d="M70,378 V404 H348" stroke="var(--fp-viz-4)" stroke-width="2.75"/>
+              <path d="M210,378 V404 H348" stroke="var(--fp-viz-5)" stroke-width="2.75"/>
+              <path d="M350,387 V404" stroke="var(--fp-viz-8)" stroke-width="3.75"/>
+              <path d="M490,378 V404 H352" stroke="var(--fp-viz-7)" stroke-width="2.75"/>
+              <path d="M630,378 V404 H352" stroke="var(--fp-viz-6)" stroke-width="2.75"/>
             </g>
             <path d="M350,404 V430" fill="none" stroke="var(--fp-signal-orange)" stroke-width="3.5" stroke-linecap="round" marker-end="url(#flowArrowOrange)"/>
 
@@ -788,16 +791,18 @@
             <text x="210" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">Wholesale</text>
             <text x="210" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">&amp; 3PL</text>
 
-            <!-- Last-mile logistics -->
-            <circle cx="350" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-8)" stroke-width="2.5"/>
-            <g transform="translate(338,348)" stroke="var(--fp-viz-8)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Last-mile logistics: emphasized — bigger, filled, glowing -->
+            <circle cx="350" cy="360" r="50" fill="var(--fp-viz-8)" opacity="0.09"/>
+            <circle cx="350" cy="360" r="36" fill="var(--fp-viz-8)" opacity="0.14"/>
+            <circle cx="350" cy="360" r="27" fill="var(--fp-viz-8)" stroke="#fff" stroke-width="3"/>
+            <g transform="translate(350,360) scale(1.35) translate(-12,-12)" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 20.5C12 20.5 18.5 13.8 18.5 9.5C18.5 5.9 15.6 3 12 3C8.4 3 5.5 5.9 5.5 9.5C5.5 13.8 12 20.5 12 20.5Z"/>
               <rect x="9.2" y="7" width="5.6" height="4.6" rx="0.6"/>
               <path d="M9.2 9.3h5.6"/>
             </g>
-            <rect x="290" y="378" width="120" height="28" rx="5" fill="#fff" fill-opacity="0.9"/>
-            <text x="350" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-size="9.5" font-weight="700" fill="var(--fp-fg2)">Last-mile logistics</text>
-            <text x="350" y="401" text-anchor="middle" font-family="Arial,sans-serif" font-size="8.5" fill="var(--fp-fg4)">final-mile parcel depots</text>
+            <rect x="282" y="390" width="136" height="32" rx="5" fill="#fff" fill-opacity="0.95" stroke="var(--fp-viz-8)" stroke-width="1"/>
+            <text x="350" y="404" text-anchor="middle" font-family="Arial,sans-serif" font-size="11.5" font-weight="700" fill="var(--fp-viz-8)">Last-mile logistics</text>
+            <text x="350" y="416" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" font-weight="600" fill="var(--fp-fg3)">final-mile parcel depots</text>
 
             <!-- Light manufacturing & assembly -->
             <circle cx="490" cy="360" r="19" fill="#fff" stroke="var(--fp-viz-7)" stroke-width="2.5"/>
