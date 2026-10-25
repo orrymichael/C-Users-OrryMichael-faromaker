@@ -1570,21 +1570,31 @@ function barList(rows, { fmt = (v) => v, color = '#344050', max = 8 } = {}) {
   const top = rows.slice(0, max), mx = Math.max(1, ...top.map((r) => r.value));
   return top.length ? el('div', { class: 'bars' }, top.map((r) => el('div', { class: 'brow' }, el('span', { class: 'bl', title: r.label }, r.label), el('div', { class: 'bt' }, el('i', { style: `width:${Math.max(3, r.value / mx * 100)}%;background:${color}` })), el('b', {}, fmt(r.value))))) : el('p', { class: 'hint' }, 'No data yet.');
 }
-let insYear = 0;
+let insYear = 0, insPast = false;
+const FIRM_ALIAS = { nmrk: 'Newmark', 'cbre np': 'CBRE', 'cbre national partners': 'CBRE', 'nai james e hanson': 'NAI Hanson', 'nai james hanson': 'NAI Hanson' };
+const firmName = (f) => { const k = String(f).toLowerCase().replace(/\([^)]*\)/g, ' ').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim(); return FIRM_ALIAS[k] || String(f).replace(/\s*\([^)]*\)\s*/g, ' ').trim(); };
+const regionName = (r) => ({ 'Greater PHL': 'Greater Philadelphia' }[r] || r);
 function planInsights() {
   const C = data.contacts, t = today(), byId = new Map(C.list.map((c) => [c.id, c]));
   const bd = (C.bd?.events || []).filter((e) => ATTENDED.test(e.status) && e.start), years = [...new Set([...bd.map((e) => e.start.slice(0, 4)), ...plan.events.map((e) => (e.date || '').slice(0, 4))].filter(Boolean))].sort().reverse();
-  if (!insYear || !years.includes(String(insYear))) insYear = Number(years.includes(String(plan.year)) ? plan.year : years[0] || plan.year);
+  const nowY = String(new Date().getFullYear()); if (!insYear || !years.includes(String(insYear))) insYear = Number(years.includes(nowY) ? nowY : years.includes(String(plan.year)) ? plan.year : years[0] || plan.year);
   const yr = String(insYear), ysel = el('select', { onchange: (e) => { insYear = Number(e.target.value); renderPlan(); } }, (years.length ? years : [yr]).map((y) => el('option', { value: y }, y))); ysel.value = yr;
   const pe = plan.events.filter((e) => (e.date || '').startsWith(yr) && e.status !== 'Cancelled'), pAtt = pe.filter((e) => e.status === 'Attended'), com = pe.filter((e) => COMMITTED.includes(e.status)), bAtt = bd.filter((e) => e.start.startsWith(yr));
   const guestsOf = (e) => (e.guests || []).map((id) => byId.get(id)).filter(Boolean), slots = (e) => Math.max((e.guests || []).length, 0);
-  const attended = [...bAtt.map((e) => ({ region: e.region || 'Not set', type: e.type || 'Not set', firms: (e.firm || '').split(/[,/&;]|\band\b/i).map((x) => x.trim()).filter((x) => x && !/^(na|n\/a|none|-)$/i.test(x)), q: Math.ceil(Number(e.start.slice(5, 7)) / 3), owners: e.owners })),
+  const review = (C.bd?.events || []).filter((e) => e.start && e.start.startsWith(yr) && e.end < t && !ATTENDED.test(e.status) && !DECLINED.test(e.status) && /confirmed|attending|plann/i.test(e.status));
+  const attended = [...[...bAtt, ...(insPast ? review : [])].map((e) => ({ region: regionName(e.region) || 'Not set', type: e.type || 'Not set', firms: (e.firm || '').split(/[,/&;]|\band\b/i).map((x) => firmName(x.trim())).filter((x) => x && !/^(na|n\/a|none|-)$/i.test(x)), q: Math.ceil(Number(e.start.slice(5, 7)) / 3), owners: e.owners })),
     ...pAtt.map((e) => ({ region: mname(e.market) || e.market || 'Not set', type: e.etype || defaultEType(e.category), firms: [...new Set(guestsOf(e).map((c) => c.company).filter(Boolean))], q: Math.ceil(Number(e.date.slice(5, 7)) / 3), owners: [] }))];
   const spend = com.reduce((a, e) => a + evCost(e), 0), costed = com.filter((e) => evCost(e) > 0), allSlots = com.reduce((a, e) => a + slots(e), 0), cov = coverage(), people = C.list.filter(isPerson), d90 = addDays(t, -90);
   const touched = people.filter((c) => c.last && c.last >= d90).length, overdue = dueLists().over.length, total = Number(plan.total) || 0;
   const kpi = (n, l, sub) => el('div', { class: 's' }, el('b', {}, n), el('span', {}, l), sub && el('small', { class: 'hint' }, sub));
   const spendBy = (keyFn) => tally(com.flatMap((e) => { const gs = guestsOf(e), keys = keyFn(e, gs); const c = evCost(e); return keys.length ? keys.map((k) => [k, c / keys.length]) : [['No guests logged', c]]; })).map((r) => ({ ...r, value: Math.round(r.value) }));
   const card = (h, sub, node) => el('div', { class: 'card chart' }, el('h2', {}, h), sub && el('div', { class: 'sub' }, sub), node);
+  const link = (e) => (e.url ? el('a', { href: e.url, target: '_blank', rel: 'noopener' }, e.name) : e.name);
+  const reviewCard = review.length ? card('Past events not marked as attended', `${review.length} event${review.length > 1 ? 's' : ''} in ${yr} already happened but are still Confirmed or Planned on the board. Mark them Done in Monday, or count them here.`, el('div', {},
+    el('label', { class: 'mtg', style: 'margin:4px 0 8px' }, el('input', { type: 'checkbox', checked: insPast, onchange: (e) => { insPast = e.target.checked; renderPlan(); } }), 'Count these as attended in the charts'),
+    review.slice(0, 15).map((e) => el('div', { class: 'note' }, link(e), el('small', {}, [fmtDate(e.start), e.status, e.region].filter(Boolean).join(' · ')))))) : null;
+  const gapDefs = [['Event type', (e) => e.type], ['Region', (e) => e.region], ['Relationship / firm', (e) => e.firm && !/^(na|n\/a)$/i.test(e.firm.trim())], ['Location', (e) => e.location], ['Faropoint team', (e) => e.owners.length]].map(([l, f]) => ({ l, list: bAtt.filter((e) => !f(e)) })).filter((g) => g.list.length);
+  const gapsCard = card('Information missing on attended events', `Fill these in on the Monday board and the charts update on the next refresh. Cost and the individual guests are not stored on the board: enter them on the event in the plan.`, gapDefs.length ? el('div', {}, gapDefs.map((g) => el('div', { class: 'note' }, el('b', {}, `${g.l}: ${g.list.length} missing`), el('small', {}, g.list.slice(0, 6).flatMap((e, i) => (i ? [', ', link(e)] : [link(e)])))))) : el('p', { class: 'hint' }, 'Nothing missing.'));
   return el('div', {},
     el('div', { class: 'bar', style: 'justify-content:space-between' }, el('span', { class: 'hint' }, 'Events attended come from the Business Development items on the board and from your plan. Spend comes from the plan.'), el('div', { class: 'bar', style: 'margin:0' }, el('b', {}, 'Year'), ysel)),
     el('div', { class: 'sum' }, kpi(attended.length, 'Events attended'), kpi(money(spend), 'Event spend', `${com.length} booked or attended`), kpi(costed.length ? money(spend / costed.length) : '—', 'Avg cost per event'), kpi(allSlots ? money(spend / allSlots) : '—', 'Cost per guest invited', `${allSlots} invitations`)),
@@ -1595,7 +1605,7 @@ function planInsights() {
     card('Who we have spent the most on (company)', 'Each event cost is split across the companies of the guests invited.', barList(spendBy((e, gs) => [...new Set(gs.map((c) => c.company).filter(Boolean))]), { fmt: money, color: '#F59E0B', max: 10 })),
     card('Who we have spent the most on (contact)', 'Each event cost is split across the guests invited.', barList(spendBy((e, gs) => gs.map((c) => c.name)), { fmt: money, color: '#16A36A', max: 10 })),
     card('Spend by event type', null, barList(tally(com.map((e) => [e.etype || defaultEType(e.category), evCost(e)])).map((r) => ({ ...r, value: Math.round(r.value) })), { fmt: money, color: '#0E8A9A' })),
-    card('Events attended by quarter', null, barList([1, 2, 3, 4].map((q) => ({ label: 'Q' + q, value: attended.filter((a) => a.q === q).length })), { color: '#1B2A3A', max: 4 })));
+    card('Events attended by quarter', null, barList([1, 2, 3, 4].map((q) => ({ label: 'Q' + q, value: attended.filter((a) => a.q === q).length })), { color: '#1B2A3A', max: 4 })), reviewCard, gapsCard);
 }
 // drop a completed BD Plan Workbook anywhere on the Business Development tab and it is read straight away
 $('#view').addEventListener('dragover', (e) => { if (tab === 'plan' && e.dataTransfer?.types?.includes('Files')) e.preventDefault(); });
