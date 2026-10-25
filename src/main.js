@@ -289,7 +289,7 @@ const closeSheet = () => $('#sheet').classList.remove('on');
 $('#sheet').addEventListener('click', (e) => { if (e.target.id === 'sheet') closeSheet(); });
 
 // ---------------------------------------------------------------- navigation
-const TABS = [['today', 'Today'], ['contacts', 'Contacts'], ['calendar', 'Calendar'], ['plan', 'Business Dev'], ['pipeline', 'Vcards'], ['insights', 'Insights', 1], ['capture', 'Capture', 1], ['settings', 'Settings', 1]];
+const TABS = [['today', 'Today'], ['contacts', 'Contacts'], ['calendar', 'Calendar'], ['plan', 'BD'], ['pipeline', 'Vcards'], ['insights', 'Insights', 1], ['capture', 'Capture', 1], ['settings', 'Settings', 1]];
 $('#tabs').replaceChildren(...TABS.filter((t) => !t[2]).map(([k, label]) => el('button', { 'data-t': k, onclick: () => go(k) }, icon(k), label)),
   el('button', { id: 'moreBtn', onclick: () => openMore() }, icon('more'), 'More'),
   ...TABS.filter((t) => t[2]).map(([k, label]) => el('button', { class: 'mi', 'data-t': k, onclick: () => go(k) }, icon(k), label)));
@@ -926,7 +926,7 @@ function coverage() {
 }
 function renderPlan() {
   const C = data.contacts; if (!C) return $('#view').replaceChildren(el('p', { class: 'hint' }, 'Loading…'));
-  const seg = el('div', { class: 'seg' }, [['overview', 'Overview'], ['events', 'Planned'], ['attended', 'Attended'], ['find', 'Events'], ['budget', 'Budget'], ['insights', 'Insights'], ['strategy', 'Strategy']].map(([k, l]) => el('button', { class: planView === k ? 'on' : '', onclick: () => { planView = k; renderPlan(); } }, l)));
+  const seg = el('div', { class: 'seg wrap' }, [['overview', 'Overview'], ['events', 'Planned'], ['attended', 'Attended'], ['find', 'Events'], ['budget', 'Budget'], ['insights', 'Insights'], ['strategy', 'Strategy']].map(([k, l]) => el('button', { class: planView === k ? 'on' : '', onclick: () => { planView = k; renderPlan(); } }, l)));
   const head = el('div', {}, el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', { style: 'font-size:22px' }, `${plan.year} business development`), el('div', { class: 'bar', style: 'margin:0' }, el('button', { class: 'btn pri', onclick: () => openPlanEvent(null) }, '+ Create'), workbookButton())), el('div', { class: 'bar' }, seg));
   const note = !demo && el('p', { class: 'hint', style: 'margin:0 2px 12px' }, 'The plan and budget are saved on this device. Use Export on the Strategy tab to back it up or share it.');
   $('#view').replaceChildren(head, note, { overview: planOverview, events: planEvents, attended: planAttended, find: planFind, budget: planBudgetTab, insights: planInsights, strategy: planStrategy }[planView]());
@@ -1521,7 +1521,7 @@ function nearBar() {
     el('p', { class: 'hint', style: 'margin:6px 2px 0' }, evNear.on ? `${evNear.events.length} sports, concert and comedy events within ${evNear.mi} miles of ${evNear.q}${evNear.err ? ' · ' + evNear.err : ''}${!demo && !cfg.tmKey && !cfg.sgId ? ' · Add a Ticketmaster key or SeatGeek client ID in Settings to search by place.' : ''}` : 'Search any place and radius, or use your saved markets below.'));
 }
 function planFind() {
-  const body = el('div'), seg = el('div', { class: 'seg' }, [['discover', 'Search & discover'], ['compare', 'Compare tickets'], ['tickets', 'Tickets & travel'], ['food', 'Food & drink']].map(([k, l]) => el('button', { class: evView === k ? 'on' : '', onclick: () => { evView = k; renderPlan(); } }, l)));
+  const body = el('div'), seg = el('div', { class: 'seg wrap' }, [['discover', 'Search & discover'], ['compare', 'Compare tickets'], ['tickets', 'Tickets & travel'], ['food', 'Food & drink']].map(([k, l]) => el('button', { class: evView === k ? 'on' : '', onclick: () => { evView = k; renderPlan(); } }, l)));
   ({ discover: evDiscover, compare: evCompare, tickets: evTickets, food: evFood })[evView](body); return el('div', {}, el('div', { class: 'bar' }, seg), body);
 }
 const tally = (pairs) => { const m = new Map(); for (const [k, v] of pairs) m.set(k, (m.get(k) || 0) + v); return [...m.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value); };
@@ -1573,6 +1573,7 @@ const workbookButton = () => { const wb = el('input', { type: 'file', accept: '.
 
 // ---- Vcards: contacts as cards by tier; drag a card to another tier to re-tier it
 const vcF = { q: '', kind: '' };
+async function moveTier(c, lab) { const C = data.contacts; if (!c || !lab || c.tier === lab) return; c.tier = lab; say(await enqueue({ type: 'column', boardId: C.id, itemId: c.id, columnId: C.roles.tier.id, value: { label: lab } })); renderPipeline(); }
 function renderPipeline() {
   const C = data.contacts; if (!C) return $('#view').replaceChildren(el('p', { class: 'hint' }, 'Loading…'));
   const R = C.roles, people = C.list.filter(isPerson), labels = (R.tier?.labels || []).map((l) => l.label).filter(Boolean);
@@ -1581,14 +1582,14 @@ function renderPipeline() {
   const cols = labels.filter((l) => people.some((c) => c.tier === l) || tn(l) < 99).sort((a, b) => tn(a) - tn(b) || a.localeCompare(b)); if (people.some((c) => !labels.includes(c.tier))) cols.push('');
   const board = el('div', { class: 'kan' }, cols.map((lab) => { const all = people.filter((c) => (labels.includes(c.tier) ? c.tier : '') === lab), list = all.filter(ok).sort((a, b) => (dueOf(a) || '9').localeCompare(dueOf(b) || '9')), tc = TIER_COLOR[tierCls(lab)];
     return el('div', { class: 'kc', style: `--tc:${tc}`, ondragover: (e) => { if (lab) { e.preventDefault(); e.currentTarget.classList.add('over'); } }, ondragleave: (e) => e.currentTarget.classList.remove('over'),
-      ondrop: async (e) => { e.preventDefault(); e.currentTarget.classList.remove('over'); const c = C.list.find((x) => x.id === e.dataTransfer.getData('text/plain')); if (!c || !lab || c.tier === lab) return; c.tier = lab; say(await enqueue({ type: 'column', boardId: C.id, itemId: c.id, columnId: R.tier.id, value: { label: lab } })); renderPipeline(); } },
+      ondrop: (e) => { e.preventDefault(); e.currentTarget.classList.remove('over'); moveTier(C.list.find((x) => x.id === e.dataTransfer.getData('text/plain')), lab); } },
       el('h3', {}, el('span', {}, lab || 'No tier'), el('span', { class: 'cnt' }, list.length === all.length ? list.length : `${list.length} of ${all.length}`)),
       list.slice(0, 40).map((c) => { const k = kindOf(c); return el('div', { class: 'kd', draggable: true, ondragstart: (e) => e.dataTransfer.setData('text/plain', c.id), onclick: () => openContact(c) },
         el('div', { class: 'kd-top' }, el('div', { class: 'av', style: `background:${KIND_COLOR[k]};color:#fff` }, initials(c.name)), el('div', { class: 'kd-who' }, el('strong', {}, c.name), el('small', {}, [c.title, c.company].filter(Boolean).join(' · '))), c.phone && el('a', { class: 'btn round', href: telHref(c.phone), title: 'Call', onclick: (e) => e.stopPropagation() }, icon('phone'))),
-        el('div', { class: 'kd-bot' }, kindChip(c), dueChip(c), pocOf(c) && el('small', {}, 'POC ' + pocOf(c)))); }), list.length > 40 && el('p', { class: 'hint' }, `+${list.length - 40} more (narrow with search or type)`)); }));
+        el('div', { class: 'kd-bot' }, kindChip(c), dueChip(c), pocOf(c) && el('small', {}, 'POC ' + pocOf(c))), el('select', { class: 'kd-move', 'aria-label': 'Move to tier', onclick: (e) => e.stopPropagation(), onchange: (e) => moveTier(c, e.target.value) }, el('option', { value: '' }, 'Move to tier…'), cols.filter((x) => x && x !== c.tier).map((l) => el('option', { value: l }, l)))); }), list.length > 40 && el('p', { class: 'hint' }, `+${list.length - 40} more (narrow with search or type)`)); }));
   const search = el('input', { type: 'search', placeholder: 'Search name, company or phone', value: vcF.q, style: 'flex:1 1 200px', oninput: (e) => { vcF.q = e.target.value; clearTimeout(vcT); vcT = setTimeout(renderPipeline, 250); } });
   const pills = el('div', { class: 'pills' }, [['', 'All']].concat(KINDS.filter((k) => people.some((c) => kindOf(c) === k)).map((k) => [k, k === 'Principal' ? 'Principals' : k])).map(([k, l]) => el('button', { class: 'tp' + (vcF.kind === k ? ' on' : ''), style: k ? `--c:${KIND_COLOR[k]}` : '', onclick: () => { vcF.kind = k; renderPipeline(); } }, l)));
-  $('#view').replaceChildren(el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', { style: 'font-size:22px' }, 'Vcards'), el('span', { class: 'hint' }, 'Drag a card to another tier to change it. On a phone, open the contact.')), el('div', { class: 'bar' }, search), pills, board);
+  $('#view').replaceChildren(el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', { style: 'font-size:22px' }, 'Vcards'), el('span', { class: 'hint' }, 'Drag a card to another tier, or use Move to tier on the card.')), el('div', { class: 'bar' }, search), pills, board);
 }
 let vcT = 0;
 
@@ -1721,6 +1722,9 @@ async function openNavanPull() { // any date range, and every transaction, for w
   openSheet(el('h2', {}, 'Navan card transactions'), configured ? [el('p', { class: 'hint' }, 'Reads your own company card charges from Navan (read-only, up to 62 days at a time). New outing charges also appear on their own in Tickets & travel. Nothing is written to Navan.'), el('div', { style: 'display:flex;gap:10px;flex-wrap:wrap' }, el('div', { class: 'f' }, el('label', {}, 'From'), from), el('div', { class: 'f' }, el('label', {}, 'To'), to)), el('div', { class: 'bar' }, pull), out]
     : el('div', { class: 'panel', style: 'max-width:none;box-shadow:none' }, el('b', {}, 'Navan is not fully set up on the server yet. '), why), el('div', { class: 'bar' }, el('button', { class: 'btn', onclick: closeSheet }, 'Close')));
 }
+
+// installable app: cache the shell so the CRM opens from the home screen
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 
 // ---------------------------------------------------------------- boot
 $('#mode').onclick = async () => { if (!cfg.token || demo) return; await flush(); await load(); say('Refreshed from Monday'); };

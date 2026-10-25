@@ -98,3 +98,12 @@ main.wide{max-width:1560px}
 /* ---- navan inbox badge on the Business Dev tab */
 #tabs button[data-t="plan"]{position:relative}
 #tabs button[data-n]::after{content:attr(data-n);position:absolute;top:4px;right:calc(50% - 26px);min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#16A36A;color:#fff;font:600 11px/17px 'Roboto',Arial;text-align:center}
+/* ---- phone: wrapped sub-tabs, move-to-tier on touch, comfortable tap targets */
+.seg.wrap{display:flex;flex-wrap:wrap;border:0;overflow:visible;gap:6px}
+.seg.wrap button{border:1px solid var(--line);border-radius:999px;padding:8px 14px}
+.seg.wrap button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.kd-move{display:none;width:100%;margin-top:8px;padding:8px;font-size:14px}
+@media(pointer:coarse),(max-width:899px){.kd-move{display:block}}
+@media(max-width:560px){.btn.sm{min-height:38px}.sum{grid-template-columns:repeat(2,1fr)}.brow{grid-template-columns:minmax(80px,38%) 1fr auto}}
+/* phone: multi-column form rows in the event sheet wrap instead of squeezing */
+@media(max-width:560px){#sheetIn div[style*="gap: 10px"]{flex-wrap:wrap}#sheetIn div[style*="gap: 10px"]>div{flex:1 1 150px!important}}
