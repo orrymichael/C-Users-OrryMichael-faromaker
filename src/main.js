@@ -431,7 +431,7 @@ function meetingRow(m, withDay) {
   const cs = meetingContacts(m);
   return el('div', { class: 'row', onclick: () => (cs[0] ? openContact(cs[0]) : m.link && window.open(m.link, '_blank', 'noopener')) }, el('div', { class: 'who' }, el('strong', {}, m.title || '(no title)'),
     el('small', {}, [withDay && fmtDate(m.day), meetingTime(m), m.cal].filter(Boolean).join(' · ')), cs.length ? el('small', {}, 'With ' + cs.map((c) => c.name).join(', ')) : m.names.length > 1 ? el('small', {}, m.names.slice(0, 3).join(', ')) : null),
-    el('div', { class: 'acts', style: 'flex:none;flex-wrap:nowrap' }, el('button', { class: 'btn sm', title: 'Create an initiative or event from this meeting', onclick: (e) => { e.stopPropagation(); openCreateInitiative(seedFromMeeting(m)); } }, '+ Initiative'),
+    el('div', { class: 'acts', style: 'flex:none;flex-wrap:nowrap' }, el('button', { class: 'btn sm', title: 'Create an event from this meeting', onclick: (e) => { e.stopPropagation(); openCreateInitiative(seedFromMeeting(m)); } }, '+ Event'),
       m.link && el('a', { class: 'btn sm', href: m.link, target: '_blank', rel: 'noopener', onclick: (e) => e.stopPropagation() }, 'Outlook')));
 }
 function seedFromMeeting(m) { const cs = meetingContacts(m);
@@ -867,63 +867,22 @@ async function createAddressColumns() {
 function openCreateNew() {
   const row = (label, sub, fn) => el('div', { class: 'row', onclick: fn }, el('div', { class: 'who' }, el('strong', {}, label), el('small', {}, sub)));
   openSheet(el('h2', {}, 'Create new'), el('div', { class: 'card', style: 'margin-top:10px' },
-    row('Initiative or event', 'Add to Business Development on the Monday board', () => openCreateInitiative()), row('Contact', 'Add a broker or other contact', () => go('capture')),
+    row('Event', 'Create an event with Faropoint team members and guests', () => openPlanEvent(null)), row('Contact', 'Add a broker or other contact', () => go('capture')),
     row('Follow-up', 'Schedule a follow-up with a contact', () => { const inp = el('input', { placeholder: 'Contact name or phone', style: 'width:100%' }), res = el('div', {});
       inp.addEventListener('input', () => res.replaceChildren(inp.value.trim().length < 2 ? null : data.contacts.list.filter((c) => isPerson(c) && nameOrPhone(inp.value, [c.name, c.company], [c.phone, c.phone2])).slice(0, 8).map((c) => el('div', { class: 'row', onclick: () => openFollowUp(c) }, el('div', { class: 'who' }, el('strong', {}, c.name), el('small', {}, [c.title, c.company].filter(Boolean).join(' · '))))))); openSheet(el('h2', {}, 'Schedule a follow-up'), el('div', { class: 'f' }, inp), res, el('div', { class: 'bar' }, el('button', { class: 'btn', onclick: closeSheet }, 'Cancel'))); inp.focus(); })));
 }
 const quickAddLink = (f) => { const base = location.href.split('?')[0].split('#')[0]; return base + '?' + new URLSearchParams({ new: 'initiative', ...(f.name && { title: f.name }), ...(f.start && { date: f.start }), ...(f.end && { end: f.end }), ...(f.location && { loc: f.location }), ...(f.firm && { firm: f.firm }), ...(f.notes && { notes: f.notes }) }); };
 function handleDeepLink(q) { if (q.get('new')) openCreateInitiative({ name: q.get('title') || '', start: q.get('date') || '', end: q.get('end') || '', location: q.get('loc') || '', firm: q.get('firm') || '', notes: q.get('notes') || '' }); }
-function openCreateInitiative(seed = {}) {
-  track('create_initiative_opened');
-  const C = data.contacts, bd = C.bd, R = bd.roles, f = { mode: seed.mode || 'event', parentId: seed.parentId || '', name: seed.name || '', start: seed.start || '', end: seed.end || '', location: seed.location || '', firm: seed.firm || '', region: seed.region || '', type: seed.type || '', status: seed.status || '', notes: seed.notes || '' };
-  const obs = (k) => [...new Set(bd.events.map((e) => e[k]).filter(Boolean))].sort(), opts = (role, k) => (role?.labels || []).map((l) => l.label).filter(Boolean).concat(obs(k)).filter((x, i, a) => a.indexOf(x) === i);
-  const statuses = opts(R.status, 'status'); if (!f.status) f.status = statuses.find((x) => /planning/i.test(x)) || statuses[0] || '';
-  const usable = bd.parents.filter((p) => !p.excluded); if (!f.parentId) f.parentId = usable[0]?.id || ''; if (!usable.length) f.mode = 'initiative';
-  const owners = tagPicker(), body = el('div', {});
-  const input = (k, type = 'text', ph = '', list) => el('input', { type, value: f[k], placeholder: ph, list, oninput: (e) => { f[k] = e.target.value; }, style: 'width:100%' });
-  const dl = (id, arr) => el('datalist', { id }, arr.map((x) => el('option', { value: x })));
-  const field = (label, node) => el('div', { class: 'f' }, el('label', {}, label), node);
-  const draw = () => {
-    const seg = el('div', { class: 'seg', style: 'margin:8px 0 12px' }, [['event', 'Event or activity'], ['initiative', 'New initiative']].map(([k, l]) => el('button', { class: f.mode === k ? 'on' : '', disabled: k === 'event' && !usable.length, onclick: () => { f.mode = k; draw(); } }, l)));
-    const parent = el('select', { onchange: (e) => { f.parentId = e.target.value; } }, usable.map((p) => el('option', { value: p.id }, p.name))); parent.value = f.parentId;
-    const stat = el('select', { onchange: (e) => { f.status = e.target.value; } }, statuses.map((x) => el('option', { value: x }, x))); stat.value = f.status;
-    body.replaceChildren(seg, f.mode === 'event' ? [field('Initiative', parent), field('Event or activity name', input('name', 'text', 'e.g. Knicks vs. Celtics with CBRE')),
-      el('div', { style: 'display:flex;gap:10px' }, el('div', { style: 'flex:1' }, field('Date', input('start', 'date'))), el('div', { style: 'flex:1' }, field('End date (optional)', input('end', 'date')))),
-      field('Location', input('location', 'text', 'City, State')), field('Firm / counterparty', input('firm', 'text', '', 'ci-firms')), el('div', { style: 'display:flex;gap:10px' }, el('div', { style: 'flex:1' }, field('Type', input('type', 'text', 'Sports, Lunch, Golf…', 'ci-types'))), el('div', { style: 'flex:1' }, field('Region', input('region', 'text', '', 'ci-regions')))),
-      statuses.length ? field('Status', stat) : null, dl('ci-firms', [...new Set([...C.list.map((c) => c.company), ...obs('firm')].filter(Boolean))].sort()), dl('ci-types', opts(R.type, 'type')), dl('ci-regions', opts(R.region, 'region'))]
-      : [field('Initiative name', input('name', 'text', 'e.g. Broker Campaigns')), el('p', { class: 'hint' }, `Creates a new item in "${bd.group?.title || 'the Business Development group'}". Events are added under it afterwards.`)],
-      field('Notes', el('textarea', { rows: 3, value: f.notes, oninput: (e) => { f.notes = e.target.value; } })), owners.node);
-  };
-  draw();
-  openSheet(el('h2', {}, 'Create new'), el('p', { class: 'hint' }, seed.notes && /Outlook/.test(seed.notes) ? 'Prefilled from Outlook. Review and create.' : 'Added to the Business Development section of the Monday board.'), body,
-    el('div', { class: 'bar' }, el('button', { class: 'btn pri', onclick: async () => {
-      if (!f.name.trim()) return say('Enter a name', 'err'); const em = owners.emails(); if (!(await checkTags(em))) return;
-      if (f.mode === 'event') {
-        if (!f.parentId) return say('Choose the initiative this belongs to', 'err'); const v = {};
-        if (f.status && R.status) v[R.status.id] = { label: f.status }; if (f.start && R.dates) v[R.dates.id] = R.dates.type === 'date' ? { date: f.start } : { from: f.start, to: f.end || f.start };
-        if (f.location && R.location) v[R.location.id] = R.location.type === 'long_text' ? { text: f.location } : f.location; if (f.firm && R.firm) v[R.firm.id] = R.firm.type === 'long_text' ? { text: f.firm } : f.firm;
-        if (f.notes && R.notes) v[R.notes.id] = { text: f.notes }; for (const k of ['region', 'type']) if (f[k] && R[k]) v[R[k].id] = { label: f[k] };
-        const msg = await enqueue({ type: 'subitem', parentId: f.parentId, name: f.name.trim(), vals: v, owners: em, ownerCol: R.owner?.id || '' });
-        bd.events.push({ id: 'tmp-' + uid(), parentId: f.parentId, parent: bd.parents.find((p) => p.id === f.parentId)?.name || '', name: f.name.trim(), url: '', status: f.status, start: f.start, end: f.end || f.start, location: f.location, notes: f.notes, firm: f.firm, region: f.region, type: f.type, owners: [] }); closeSheet(); say(msg);
-      } else {
-        const v = {}; const tl = C.roles.tier?.labels?.find((l) => /on-?going/i.test(l.label)); if (tl && C.roles.tier) v[C.roles.tier.id] = { label: tl.label };
-        const msg = await enqueue({ type: 'initiative', name: f.name.trim(), vals: v, owners: em, ownerCol: C.roles.poc?.id || '', groupId: bd.group?.id || '' });
-        bd.parents.push({ id: 'tmp-' + uid(), name: f.name.trim(), excluded: false }); closeSheet(); say(msg);
-      }
-      if (!getQ().length && !demo) load(true); else if (tab === 'plan') renderPlan(); } }, 'Create'),
-      el('button', { class: 'btn', title: 'A link that opens this form prefilled; paste it into an Outlook invite or email', onclick: async () => { const l = quickAddLink(f); try { await navigator.clipboard.writeText(l); say('Quick-add link copied'); } catch { prompt('Copy this link', l); } } }, 'Copy quick-add link'), el('button', { class: 'btn', onclick: closeSheet }, 'Cancel')));
-}
-
 // ---------------------------------------------------------------- events attended (Business Development subitems)
 let attYear = new Date().getFullYear();
 function planAttended() {
   const C = data.contacts, bd = C.bd, R = bd.roles;
-  const bar = el('div', { class: 'bar', style: 'justify-content:space-between' }, el('div', { class: 'bar', style: 'margin:0' }, el('button', { class: 'btn sm', 'aria-label': 'Previous year', onclick: () => { attYear--; renderPlan(); } }, '‹'), el('b', { style: 'font-size:18px' }, attYear), el('button', { class: 'btn sm', 'aria-label': 'Next year', onclick: () => { attYear++; renderPlan(); } }, '›')), el('button', { class: 'btn pri', onclick: () => openCreateInitiative() }, '+ Create new'));
+  const bar = el('div', { class: 'bar', style: 'justify-content:space-between' }, el('div', { class: 'bar', style: 'margin:0' }, el('button', { class: 'btn sm', 'aria-label': 'Previous year', onclick: () => { attYear--; renderPlan(); } }, '‹'), el('b', { style: 'font-size:18px' }, attYear), el('button', { class: 'btn sm', 'aria-label': 'Next year', onclick: () => { attYear++; renderPlan(); } }, '›')), el('div', { class: 'bar', style: 'margin:0' }, mondayImportButton(attYear), el('button', { class: 'btn pri', onclick: () => openCreateInitiative() }, '+ Create event')));
   if (!bd.group) return el('div', {}, bar, el('div', { class: 'panel' }, el('h2', {}, 'Business Development group not found'), el('p', {}, 'Choose the group that holds your initiatives in Settings.'), el('button', { class: 'btn pri', onclick: () => go('settings') }, 'Open Settings')));
-  const evs = bd.events.filter((e) => e.start.startsWith(String(attYear))), done = evs.filter((e) => ATTENDED.test(e.status)).sort((a, b) => a.start.localeCompare(b.start)), up = evs.filter((e) => !ATTENDED.test(e.status) && !DECLINED.test(e.status) && e.start >= today()).sort((a, b) => a.start.localeCompare(b.start));
+  const evs = attendedEvents().filter((e) => e.start.startsWith(String(attYear))), done = evs.filter((e) => ATTENDED.test(e.status)).sort((a, b) => a.start.localeCompare(b.start)), up = evs.filter((e) => !ATTENDED.test(e.status) && !DECLINED.test(e.status) && e.start >= today()).sort((a, b) => a.start.localeCompare(b.start));
   const count = (list, k) => { const m = new Map(); list.forEach((e) => m.set(e[k] || 'Not set', (m.get(e[k] || 'Not set') || 0) + 1)); return m; };
   const tile = (n, l) => el('div', { class: 's' }, el('b', {}, n), el('span', {}, l)), firms = new Set(done.map((e) => e.firm).filter(Boolean));
-  const row = (e) => el('div', { class: 'row', onclick: () => openBdEvent(e) }, el('div', { class: 'who' }, el('strong', {}, e.name), el('small', {}, [fmtDate(e.start), e.location, e.firm].filter(Boolean).join(' · ')), el('div', {}, e.type && el('span', { class: 'chip' }, e.type), e.region && el('span', { class: 'chip' }, e.region), !ATTENDED.test(e.status) && e.status && el('span', { class: 'chip' }, e.status))), e.owners.length ? el('small', { style: 'flex:none;max-width:90px;text-align:right;color:var(--mut)' }, e.owners.length + ' people') : null);
+  const row = (e) => el('div', { class: 'row', onclick: () => (e.planId ? openPlanEvent(e.planId) : openBdEvent(e)) }, el('div', { class: 'who' }, el('strong', {}, e.name), el('small', {}, [fmtDate(e.start), e.location, e.firm].filter(Boolean).join(' · ')), el('div', {}, e.type && el('span', { class: 'chip' }, e.type), e.region && el('span', { class: 'chip' }, e.region), !ATTENDED.test(e.status) && e.status && el('span', { class: 'chip' }, e.status))), e.owners.length ? el('small', { style: 'flex:none;max-width:90px;text-align:right;color:var(--mut)' }, e.owners.length + ' people') : null);
   let lastM = ''; const grouped = (list) => list.map((e) => { const m = e.start.slice(0, 7), h = m !== lastM ? el('div', { class: 'sec-h', style: 'margin:12px 14px 2px' }, el('h2', { style: 'font-size:16px' }, parseIso(m + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' }))) : null; lastM = m; return [h, row(e)]; });
   const out = el('div', {}, bar, el('div', { class: 'sum' }, tile(done.length, 'Events attended'), tile(up.length, 'Upcoming'), tile(count(done, 'type').size, 'Event types'), tile(firms.size, 'Firms')));
   if (!evs.length) { out.append(el('p', { class: 'hint' }, `No events with a date in ${attYear} under the Business Development initiatives.${bd.events.length ? '' : ' No event subitems were found; check the initiative exclusion in Settings.'}`)); return out; }
@@ -968,7 +927,7 @@ function coverage() {
 function renderPlan() {
   const C = data.contacts; if (!C) return $('#view').replaceChildren(el('p', { class: 'hint' }, 'Loading…'));
   const seg = el('div', { class: 'seg' }, [['overview', 'Overview'], ['events', 'Planned'], ['attended', 'Attended'], ['find', 'Events'], ['budget', 'Budget'], ['insights', 'Insights'], ['strategy', 'Strategy']].map(([k, l]) => el('button', { class: planView === k ? 'on' : '', onclick: () => { planView = k; renderPlan(); } }, l)));
-  const head = el('div', {}, el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', { style: 'font-size:22px' }, `${plan.year} business development`), workbookButton()), el('div', { class: 'bar' }, seg));
+  const head = el('div', {}, el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', { style: 'font-size:22px' }, `${plan.year} business development`), el('div', { class: 'bar', style: 'margin:0' }, el('button', { class: 'btn pri', onclick: () => openPlanEvent(null) }, '+ Create'), workbookButton())), el('div', { class: 'bar' }, seg));
   const note = !demo && el('p', { class: 'hint', style: 'margin:0 2px 12px' }, 'The plan and budget are saved on this device. Use Export on the Strategy tab to back it up or share it.');
   $('#view').replaceChildren(head, note, { overview: planOverview, events: planEvents, attended: planAttended, find: planFind, budget: planBudgetTab, insights: planInsights, strategy: planStrategy }[planView]());
 }
@@ -1159,7 +1118,7 @@ function planOverview() {
 }
 function planEvents() {
   const evs = plan.events.slice().sort((a, b) => (a.date || '').localeCompare(b.date || '')), by = new Map(); evs.forEach((e) => { const k = (e.date || 'No date').slice(0, 7); (by.get(k) || by.set(k, []).get(k)).push(e); });
-  return el('div', {}, el('div', { class: 'bar' }, el('button', { class: 'btn pri', onclick: () => openPlanEvent(null) }, '+ Add event'), el('button', { class: 'btn', onclick: () => go('events') }, 'Browse live events')),
+  return el('div', {}, el('div', { class: 'bar' }, el('button', { class: 'btn pri', onclick: () => openPlanEvent(null) }, '+ Create event'), el('button', { class: 'btn', onclick: () => go('events') }, 'Browse live events')),
     evs.length ? [...by.entries()].map(([k, list]) => [el('div', { class: 'sec-h' }, el('h2', {}, k === 'No date' ? k : parseIso(k + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })), el('span', { class: 'hint' }, money(list.reduce((a, e) => a + evCost(e), 0)))),
       el('div', { class: 'card' }, list.map((e) => el('div', { class: 'row', onclick: () => openPlanEvent(e.id) }, el('div', { class: 'who' }, el('strong', {}, e.title), el('small', {}, [fmtDate(e.date), e.venue, e.category].filter(Boolean).join(' · ')), el('div', {}, el('span', { class: 'chip' }, e.status), (e.guestNames || []).length ? el('span', { class: 'chip' }, e.guestNames.length + ' guests') : null)), el('b', { style: 'color:var(--blue);font-weight:500' }, money(evCost(e))))))]) : el('p', { class: 'hint' }, 'No events in the plan yet.'));
 }
@@ -1190,11 +1149,11 @@ function openPlanEvent(id, seed) {
   drawChips(); recalc();
   const field = (label, node) => el('div', { class: 'f' }, el('label', {}, label), node);
   const calEv = () => ({ uid: `${e.id}@necrm`, title: e.title || 'BD event', date: e.date || today(), time: e.time || '19:00', mins: 180, loc: e.venue, url: e.url, desc: [e.guestNames.length && 'Guests: ' + e.guestNames.join(', '), e.notes].filter(Boolean).join('\n') });
-  openSheet(el('h2', {}, isNew ? 'Add event' : 'Event'), field('Event', inp('title', 'text', 'e.g. Yankees vs Red Sox')), el('div', { style: 'display:flex;gap:10px' }, el('div', { style: 'flex:1' }, field('Date', inp('date', 'date'))), el('div', { style: 'flex:1' }, field('Start time', inp('time', 'time')))), field('Venue', inp('venue')),
+  openSheet(el('h2', {}, isNew ? 'Create event' : 'Edit event'), field('Event', inp('title', 'text', 'e.g. Yankees vs Red Sox')), el('div', { style: 'display:flex;gap:10px' }, el('div', { style: 'flex:1' }, field('Date', inp('date', 'date'))), el('div', { style: 'flex:1' }, field('Start time', inp('time', 'time')))), field('Venue', inp('venue')), el('div', { style: 'display:flex;gap:10px' }, el('div', { style: 'flex:1' }, field('Firm / relationship', inp('firm'))), el('div', { style: 'flex:1' }, field('Region', inp('region'))), el('div', { style: 'flex:1' }, field('Type label', inp('mtype')))),
     el('div', { style: 'display:flex;gap:10px' }, el('div', { style: 'flex:1' }, field('Category', sel('category', PLAN_CATS))), el('div', { style: 'flex:1' }, field('Status', sel('status', PLAN_STATUS)))),
     el('div', { style: 'display:flex;gap:10px' }, el('div', { style: 'flex:1' }, field('Event type (budget)', (() => { const s2 = el('select', { onchange: (ev) => { e.etype = ev.target.value; drawLines(); } }, ETYPES.map((o) => el('option', { value: o }, o))); s2.value = e.etype; return s2; })())), el('div', { style: 'flex:1' }, field('Budget line', lineSel))),
     el('div', { style: 'display:flex;gap:10px' }, el('div', { style: 'flex:1' }, field('Tickets', inp('qty', 'number'))), el('div', { style: 'flex:1' }, field('Cost per ticket ($)', inp('unit', 'number'))), el('div', { style: 'flex:1' }, field('Actual total ($)', inp('actual', 'number')))),
-    el('p', { style: 'margin:0 0 10px' }, 'Cost counted against budget: ', total), field('Ticket link', inp('url', 'url')), field('Guests', el('div', {}, find, res, chips)), field('Notes', el('textarea', { rows: 2, value: e.notes || '', oninput: (ev) => { e.notes = ev.target.value; } })),
+    el('p', { style: 'margin:0 0 10px' }, 'Cost counted against budget: ', total), field('Ticket link', inp('url', 'url')), field('Guests (clients and brokers)', el('div', {}, find, res, chips)), field('Internal members (Faropoint team)', memberPicker(e).node), field('Notes', el('textarea', { rows: 2, value: e.notes || '', oninput: (ev) => { e.notes = ev.target.value; } })), updatesBox(e),
     el('label', { class: 'hint', style: 'display:block;margin:4px 0' }, 'ADD TO YOUR CALENDAR'), calButtons(calEv), e.url && el('p', {}, el('a', { href: e.url, target: '_blank', rel: 'noopener' }, 'Open ticket page')),
     el('p', { class: 'hint' }, 'The app tracks requests and budget; tickets are purchased on the ticket page. Moving an event to Booked logs an invitation on each guest in Monday and schedules their next follow-up.'),
     el('div', { class: 'bar' }, el('button', { class: 'btn pri', onclick: async () => {
@@ -1562,8 +1521,8 @@ function nearBar() {
     el('p', { class: 'hint', style: 'margin:6px 2px 0' }, evNear.on ? `${evNear.events.length} sports, concert and comedy events within ${evNear.mi} miles of ${evNear.q}${evNear.err ? ' · ' + evNear.err : ''}${!demo && !cfg.tmKey && !cfg.sgId ? ' · Add a Ticketmaster key or SeatGeek client ID in Settings to search by place.' : ''}` : 'Search any place and radius, or use your saved markets below.'));
 }
 function planFind() {
-  const body = el('div'), seg = el('div', { class: 'seg' }, [['discover', 'Search & discover'], ['tickets', 'Tickets & travel'], ['food', 'Food & drink']].map(([k, l]) => el('button', { class: evView === k ? 'on' : '', onclick: () => { evView = k; renderPlan(); } }, l)));
-  ({ discover: evDiscover, tickets: evTickets, food: evFood })[evView](body); return el('div', {}, el('div', { class: 'bar' }, seg), body);
+  const body = el('div'), seg = el('div', { class: 'seg' }, [['discover', 'Search & discover'], ['compare', 'Compare tickets'], ['tickets', 'Tickets & travel'], ['food', 'Food & drink']].map(([k, l]) => el('button', { class: evView === k ? 'on' : '', onclick: () => { evView = k; renderPlan(); } }, l)));
+  ({ discover: evDiscover, compare: evCompare, tickets: evTickets, food: evFood })[evView](body); return el('div', {}, el('div', { class: 'bar' }, seg), body);
 }
 const tally = (pairs) => { const m = new Map(); for (const [k, v] of pairs) m.set(k, (m.get(k) || 0) + v); return [...m.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value); };
 function barList(rows, { fmt = (v) => v, color = '#344050', max = 8 } = {}) {
@@ -1576,14 +1535,14 @@ const firmName = (f) => { const k = String(f).toLowerCase().replace(/\([^)]*\)/g
 const regionName = (r) => ({ 'Greater PHL': 'Greater Philadelphia' }[r] || r);
 function planInsights() {
   const C = data.contacts, t = today(), byId = new Map(C.list.map((c) => [c.id, c]));
-  const bd = (C.bd?.events || []).filter((e) => ATTENDED.test(e.status) && e.start), years = [...new Set([...bd.map((e) => e.start.slice(0, 4)), ...plan.events.map((e) => (e.date || '').slice(0, 4))].filter(Boolean))].sort().reverse();
+  const have = importedIds(), bd = (C.bd?.events || []).filter((e) => ATTENDED.test(e.status) && e.start && !have.has('monday:' + e.id)), years = [...new Set([...bd.map((e) => e.start.slice(0, 4)), ...plan.events.map((e) => (e.date || '').slice(0, 4))].filter(Boolean))].sort().reverse();
   const nowY = String(new Date().getFullYear()); if (!insYear || !years.includes(String(insYear))) insYear = Number(years.includes(nowY) ? nowY : years.includes(String(plan.year)) ? plan.year : years[0] || plan.year);
   const yr = String(insYear), ysel = el('select', { onchange: (e) => { insYear = Number(e.target.value); renderPlan(); } }, (years.length ? years : [yr]).map((y) => el('option', { value: y }, y))); ysel.value = yr;
   const pe = plan.events.filter((e) => (e.date || '').startsWith(yr) && e.status !== 'Cancelled'), pAtt = pe.filter((e) => e.status === 'Attended'), com = pe.filter((e) => COMMITTED.includes(e.status)), bAtt = bd.filter((e) => e.start.startsWith(yr));
   const guestsOf = (e) => (e.guests || []).map((id) => byId.get(id)).filter(Boolean), slots = (e) => Math.max((e.guests || []).length, 0);
-  const review = (C.bd?.events || []).filter((e) => e.start && e.start.startsWith(yr) && e.end < t && !ATTENDED.test(e.status) && !DECLINED.test(e.status) && /confirmed|attending|plann/i.test(e.status));
+  const review = (C.bd?.events || []).filter((e) => !have.has('monday:' + e.id) && e.start && e.start.startsWith(yr) && e.end < t && !ATTENDED.test(e.status) && !DECLINED.test(e.status) && /confirmed|attending|plann/i.test(e.status));
   const attended = [...[...bAtt, ...(insPast ? review : [])].map((e) => ({ region: regionName(e.region) || 'Not set', type: e.type || 'Not set', firms: (e.firm || '').split(/[,/&;]|\band\b/i).map((x) => firmName(x.trim())).filter((x) => x && !/^(na|n\/a|none|-)$/i.test(x)), q: Math.ceil(Number(e.start.slice(5, 7)) / 3), owners: e.owners })),
-    ...pAtt.map((e) => ({ region: mname(e.market) || e.market || 'Not set', type: e.etype || defaultEType(e.category), firms: [...new Set(guestsOf(e).map((c) => c.company).filter(Boolean))], q: Math.ceil(Number(e.date.slice(5, 7)) / 3), owners: [] }))];
+    ...pAtt.map((e) => ({ region: regionName(e.region) || mname(e.market) || e.market || 'Not set', type: e.mtype || e.etype || defaultEType(e.category), firms: [...new Set([...(e.firm ? e.firm.split(/[,/&;]|\band\b/i).map((x) => firmName(x.trim())) : []), ...guestsOf(e).map((c) => c.company)].filter(Boolean))], q: Math.ceil(Number(e.date.slice(5, 7)) / 3), owners: [] }))];
   const spend = com.reduce((a, e) => a + evCost(e), 0), costed = com.filter((e) => evCost(e) > 0), allSlots = com.reduce((a, e) => a + slots(e), 0), cov = coverage(), people = C.list.filter(isPerson), d90 = addDays(t, -90);
   const touched = people.filter((c) => c.last && c.last >= d90).length, overdue = dueLists().over.length, total = Number(plan.total) || 0;
   const kpi = (n, l, sub) => el('div', { class: 's' }, el('b', {}, n), el('span', {}, l), sub && el('small', { class: 'hint' }, sub));
@@ -1632,6 +1591,62 @@ function renderPipeline() {
   $('#view').replaceChildren(el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', { style: 'font-size:22px' }, 'Vcards'), el('span', { class: 'hint' }, 'Drag a card to another tier to change it. On a phone, open the contact.')), el('div', { class: 'bar' }, search), pills, board);
 }
 let vcT = 0;
+
+// ---------------------------------------------------------------- app-native events: Faropoint team members, updates, and bringing in the Monday history
+const fpTeam = () => { const s = new Set(); for (const c of data.contacts?.list || []) c.pocs.forEach((n) => s.add(n)); for (const e of data.contacts?.bd?.events || []) e.owners.forEach((n) => s.add(n)); for (const e of plan.events) (e.members || []).forEach((n) => s.add(n)); (cfg.fpTeamExtra || []).forEach((n) => s.add(n)); return [...s].filter(Boolean).sort((a, b) => a.localeCompare(b)); };
+function memberPicker(e) {
+  e.members = [...(e.members || [])]; const chips = el('div', { class: 'sec', style: 'margin:6px 0' }), res = el('div', {}), inp = el('input', { placeholder: 'Search Faropoint team by name', style: 'width:100%' });
+  const drawChips = () => chips.replaceChildren(e.members.map((n, i) => el('span', { class: 'tag' }, n, el('button', { type: 'button', onclick: () => { e.members.splice(i, 1); drawChips(); } }, '×'))));
+  const add = (n) => { if (n && !e.members.some((x) => x.toLowerCase() === n.toLowerCase())) e.members.push(n); inp.value = ''; res.replaceChildren(); drawChips(); };
+  inp.addEventListener('input', () => { const q = inp.value.trim().toLowerCase(); if (!q) return res.replaceChildren(); const team = fpTeam(), hits = team.filter((n) => n.toLowerCase().includes(q) && !e.members.includes(n)).slice(0, 6);
+    res.replaceChildren(hits.map((n) => el('div', { class: 'row', style: 'min-height:44px', onclick: () => add(n) }, el('div', { class: 'who' }, el('strong', {}, n)))), q.length >= 2 && !team.some((n) => n.toLowerCase() === q) ? el('div', { class: 'row', style: 'min-height:44px', onclick: () => { const n = inp.value.trim(); (cfg.fpTeamExtra ||= []).includes(n) || cfg.fpTeamExtra.push(n); LS.set('necrm-cfg', cfg); add(n); } }, el('div', { class: 'who' }, el('strong', {}, `Add "${inp.value.trim()}"`), el('small', {}, 'Not in the team list yet'))) : null); });
+  drawChips(); return { node: el('div', {}, inp, res, chips) };
+}
+function updatesBox(e) {
+  e.updates = (e.updates || []).map((u) => ({ ...u })); const list = el('div', {}), ta = el('textarea', { rows: 2, placeholder: 'Add an update: what happened, who attended, next step', style: 'width:100%' });
+  const draw = () => list.replaceChildren(e.updates.slice().sort((a, b) => b.at.localeCompare(a.at)).map((u) => el('div', { class: 'note' }, el('div', {}, u.text), el('small', {}, `${new Date(u.at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })} · ${u.by}${u.edited ? ' · edited' : ''}`),
+    el('div', { class: 'acts', style: 'margin-top:4px' }, el('button', { type: 'button', class: 'btn sm', onclick: () => { const t = prompt('Edit update', u.text); if (t != null && t.trim()) { u.text = t.trim(); u.edited = true; draw(); } } }, 'Edit'), el('button', { type: 'button', class: 'btn sm', onclick: () => { if (confirm('Delete this update?')) { e.updates = e.updates.filter((x) => x.id !== u.id); draw(); } } }, 'Delete')))));
+  const addBtn = el('button', { type: 'button', class: 'btn sm', onclick: () => { const t = ta.value.trim(); if (!t) return; e.updates.push({ id: uid(), at: new Date().toISOString(), by: cfg.myName || 'You', text: t }); ta.value = ''; draw(); } }, 'Add update');
+  draw(); return el('div', { class: 'f' }, el('label', {}, 'Updates'), ta, el('div', { class: 'bar', style: 'margin:6px 0' }, addBtn, el('span', { class: 'hint' }, 'Press Add update, then Save.')), list);
+}
+const importedIds = () => new Set(plan.events.map((x) => x.ext).filter((x) => /^monday:/.test(x || '')));
+const importCategory = (t) => (/sport|game/i.test(t) ? 'Sports' : /concert/i.test(t) ? 'Concerts' : /comedy/i.test(t) ? 'Comedy' : /lunch|dinner|golf/i.test(t) ? 'Dining' : /conference|market visit|ski|trip/i.test(t) ? 'Conferences & travel' : 'Gifts & other');
+const importStatus = (s) => (ATTENDED.test(s) ? 'Attended' : DECLINED.test(s) ? 'Cancelled' : /confirmed|attending/i.test(s) ? 'Booked' : /plann/i.test(s) ? 'Planned' : 'Idea');
+function mondayImportButton(year) {
+  const bd = data.contacts?.bd; if (!bd) return null; const have = importedIds(), todo = bd.events.filter((e) => e.start && e.start.startsWith(String(year)) && !have.has('monday:' + e.id));
+  return todo.length ? el('button', { class: 'btn sm', title: 'Copy these events into the app so you can edit them here', onclick: () => importMondayEvents(todo, year) }, `Bring in ${todo.length} from Monday`) : null;
+}
+function importMondayEvents(list, year) {
+  if (!confirm(`Copy ${list.length} ${year} event${list.length > 1 ? 's' : ''} from the Business Development board into this app?\n\nThey become editable here. Nothing is changed in Monday.`)) return;
+  for (const e of list) plan.events.push({ id: uid(), ext: 'monday:' + e.id, source: 'Monday', title: e.name, date: e.start, endDate: e.end !== e.start ? e.end : '', time: '', venue: e.location, category: importCategory(e.type), etype: '', mtype: e.type, status: importStatus(e.status), qty: 0, unit: '', actual: '', url: '', notes: e.notes, firm: e.firm, region: e.region, members: [...e.owners], guests: [], guestNames: [], updates: [], lineId: '', mondayParent: e.parent });
+  savePlan(); say(`Brought in ${list.length} events`); track('monday_events_imported', { n: list.length }); renderPlan();
+}
+const appAsBd = (e) => ({ id: 'app:' + e.id, planId: e.id, name: e.title, url: '', status: ({ Attended: 'Done', Booked: 'Confirmed', Planned: 'Planned', Idea: 'Planned', Requested: 'Planned', Cancelled: 'Not Attending' })[e.status] || e.status, start: e.date || '', end: e.endDate || e.date || '', location: e.venue || '', notes: e.notes || '',
+  firm: e.firm || [...new Set((e.guests || []).map((id) => data.contacts.list.find((c) => c.id === id)?.company).filter(Boolean))].join(', '), region: e.region || mname(e.market) || '', type: e.mtype || e.etype || '', owners: e.members || [], parent: e.mondayParent || 'Created in the app' });
+const attendedEvents = () => { const have = importedIds(); return [...(data.contacts.bd.events || []).filter((e) => !have.has('monday:' + e.id)), ...plan.events.filter((e) => e.date).map(appAsBd)]; };
+function openCreateInitiative(seed = {}) { track('create_event_opened'); openPlanEvent(null, { title: seed.name || '', date: seed.start || '', endDate: seed.end && seed.end !== seed.start ? seed.end : '', venue: seed.location || '', firm: seed.firm || '', region: seed.region || '', notes: seed.notes || '', status: 'Planned' }); }
+
+// ---------------------------------------------------------------- Compare tickets: sports events across ticket sites
+// SeatGeek and Ticketmaster give prices to apps (with a key). StubHub, TickPick, Vivid Seats and Gametime have no public price feed, so their buttons open that site's search for the game.
+const TICKET_SITES = [['SeatGeek', 'https://seatgeek.com/search?search='], ['Ticketmaster', 'https://www.ticketmaster.com/search?q='], ['StubHub', 'https://www.stubhub.com/secure/search?q='], ['TickPick', 'https://www.tickpick.com/search/?q='], ['Vivid Seats', 'https://www.vividseats.com/search?searchTerm='], ['Gametime', 'https://gametime.co/search?q=']];
+const evCmp = { q: '', best: false };
+function evCompare(out) {
+  const all = (evNear.on ? evNear.events : (evData.events || [])).filter((e) => e.category === 'Sports'), term = evCmp.q.toLowerCase();
+  const priced = (e) => (e.links || []).filter((l) => l.price > 0).sort((a, b) => a.price - b.price)[0] || null;
+  let list = all.filter((e) => !term || (e.title + ' ' + (e.venue || '')).toLowerCase().includes(term)); if (evCmp.best) list = list.filter(priced);
+  list = list.slice().sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+  const q = el('input', { type: 'search', placeholder: 'Search a team or venue', value: evCmp.q, style: 'flex:1 1 200px', onchange: (x) => { evCmp.q = x.target.value; renderPlan(); } });
+  const only = el('label', { class: 'mtg' }, el('input', { type: 'checkbox', checked: evCmp.best, onchange: (x) => { evCmp.best = x.target.checked; renderPlan(); } }), 'Only games with a live price');
+  const card = (e) => { const best = priced(e), d = parseIso(e.date), name = e.title.replace(/ \(sample\)$/, '');
+    const btn = ([site, base]) => { const direct = (e.links || []).find((l) => l.source === site && l.url), href = direct ? direct.url : base + encodeURIComponent(name), price = direct && direct.price > 0 ? direct.price : 0, isBest = best && best.source === site;
+      return el('a', { class: 'btn sm site' + (isBest ? ' best' : ''), href, target: '_blank', rel: 'noopener', title: direct ? `Open this game on ${site}` : `Search ${site} for this game` }, isBest ? 'Best price · ' : '', site, price ? ' ' + money(price) : ''); };
+    return el('div', { class: 'evd cmp' }, el('div', { class: 'dt' }, el('b', {}, d.getDate()), el('span', {}, d.toLocaleDateString('en-US', { month: 'short' }))),
+      el('div', { class: 'who' }, el('strong', {}, name), el('small', {}, [d.toLocaleDateString('en-US', { weekday: 'long' }), e.time && new Date(`2000-01-01T${e.time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }), e.venue].filter(Boolean).join(' · ')),
+        el('div', {}, best ? el('span', { class: 'chip cc', style: 'background:#16A36A' }, `Lowest seen ${money(best.price)} on ${best.source}`) : el('span', { class: 'chip' }, 'No live price yet')),
+        el('div', { class: 'sites' }, TICKET_SITES.map(btn), el('button', { class: 'btn sm', onclick: () => openCompare(e) }, 'Live price check'), el('button', { class: 'btn sm', onclick: () => openPlanEvent(null, { title: name, date: e.date, time: e.time, venue: e.venue, category: 'Sports', url: (best || {}).url || e.url, unit: best ? best.price : e.price || '', ext: e.ext, source: best ? best.source : e.source }) }, 'Add to plan')))); };
+  out.replaceChildren(nearBar(), el('div', { class: 'panel', style: 'max-width:none;margin:0 0 10px;padding:12px' }, el('b', {}, 'How prices are found. '), 'SeatGeek and Ticketmaster prices are read live when their keys are in Settings; "Lowest seen" is the cheapest of those. StubHub, TickPick, Vivid Seats and Gametime do not share prices or seat maps with outside apps, so their buttons open that site\'s search for the game. Pick seats on the site you choose; taxes and fees are added at checkout.'),
+    el('div', { class: 'bar' }, q, only), all.length ? (list.length ? el('div', { class: 'card' }, list.slice(0, 80).map(card)) : el('p', { class: 'hint' }, 'No sports events match.')) : el('div', { class: 'panel', style: 'max-width:none' }, 'No sports events loaded yet. Use Search & discover to load your markets, or search near a place above.'));
+}
 
 // ---------------------------------------------------------------- boot
 $('#mode').onclick = async () => { if (!cfg.token || demo) return; await flush(); await load(); say('Refreshed from Monday'); };
