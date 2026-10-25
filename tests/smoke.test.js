@@ -10,7 +10,7 @@ const { chromium } = createRequire(import.meta.url)('playwright');
 const listen = (app) => new Promise((r) => { const s = http.createServer(app).listen(0, () => r({ s, url: `http://127.0.0.1:${s.address().port}` })); });
 const upstreamSeen = [];
 const upstream = await listen((req, res) => { let b = ''; req.on('data', (c) => (b += c)); req.on('end', () => { upstreamSeen.push({ auth: req.headers.authorization, body: b }); res.setHeader('content-type', 'application/json'); res.end(JSON.stringify({ errors: [{ message: 'mock monday' }] })); }); });
-const b = await chromium.launch(), errs = [];
+const b = await chromium.launch({ channel: 'chrome' }), errs = [];
 
 // 1. No server credentials: welcome screen, sample preview works.
 { const app = await listen(createApp({ DIST_DIR: 'dist' })), p = await b.newPage(); p.on('pageerror', (e) => errs.push(e.message));
@@ -26,7 +26,7 @@ const b = await chromium.launch(), errs = [];
   assert.ok(!(await p.evaluate(() => JSON.stringify(localStorage))).includes('srv-token'), 'token never reaches the browser'); await ctx.close(); app.s.close(); }
 
 // 3. PostHog: key and host come from build-time env (Hub injects them); identify by FaroMaker user id only.
-{ execFileSync('npx', ['vite', 'build', '--outDir', 'dist-ph', '--logLevel', 'error'], { env: { ...process.env, VITE_POSTHOG_KEY: 'phc_testkey', VITE_POSTHOG_HOST: 'https://ph.example' }, stdio: 'inherit' });
+{ execFileSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'build', '--outDir', 'dist-ph', '--logLevel', 'error'], { shell: process.platform === 'win32', env: { ...process.env, VITE_POSTHOG_KEY: 'phc_testkey', VITE_POSTHOG_HOST: 'https://ph.example' }, stdio: 'inherit' });
   const app = await listen(createApp({ DIST_DIR: 'dist-ph' })), ctx = await b.newContext({ extraHTTPHeaders: { 'x-faromaker-user-id': 'u_42' } }), p = await ctx.newPage(), events = [];
   await ctx.route('https://ph.example/**', async (r) => { const buf = r.request().postDataBuffer(); if (buf) { let t; try { t = zlib.gunzipSync(buf).toString(); } catch { t = buf.toString(); } if (t.startsWith('data=')) { try { t += '\n' + Buffer.from(decodeURIComponent(t.slice(5)), 'base64').toString(); } catch { /* keep raw */ } } events.push(t); } await r.fulfill({ status: 200, contentType: 'application/json', body: '{"status":1}' }); });
   await p.goto(app.url); await p.waitForSelector('text=Preview with sample data'); await p.click('text=Preview with sample data'); await p.waitForSelector('.sum');
