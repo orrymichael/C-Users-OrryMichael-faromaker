@@ -95,3 +95,6 @@ main.wide{max-width:1560px}
 /* ---- compare tickets */
 .evd.cmp .sites{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.btn.site{text-decoration:none}.btn.site.best{background:#16A36A;border-color:#16A36A;color:#fff}
 .tag button{margin-left:4px}
+/* ---- navan inbox badge on the Business Dev tab */
+#tabs button[data-t="plan"]{position:relative}
+#tabs button[data-n]::after{content:attr(data-n);position:absolute;top:4px;right:calc(50% - 26px);min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#16A36A;color:#fff;font:600 11px/17px 'Roboto',Arial;text-align:center}

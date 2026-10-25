@@ -23,6 +23,7 @@ npm run build && npm start         # http://localhost:3000
 | `VITE_POSTHOG_KEY`, `VITE_POSTHOG_HOST` | frontend (Hub injects) | PostHog project key and host |
 | `MONDAY_TOKEN` | backend secret | Monday API token. With it set, the browser never holds a token and Settings no longer asks for one |
 | `FAROS_BASE_URL`, `FAROS_API_KEY` (`FAROS_AUTH_HEADER`, `FAROS_AUTH_SCHEME`) | backend secret | FarOS API |
+| `NAVAN_CLIENT_ID`, `NAVAN_CLIENT_SECRET`, `NAVAN_CARDHOLDER` (`NAVAN_AUTH_URL`, `NAVAN_API_URL`) | backend secret | Navan card transactions, read-only. The credentials see the whole company, so `NAVAN_CARDHOLDER` (your email, name or employee ID as it appears on your charges) is required and the server returns only matching records. Used by Tickets & travel to find outing charges and link their cost to events |
 | `FAROMAKER_USER_HEADER` | backend | Request header carrying the signed-in FaroMaker user id (default `x-faromaker-user-id`) |
 
 Without `MONDAY_TOKEN` the app falls back to the token typed in Settings, as the standalone version does.
