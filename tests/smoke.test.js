@@ -14,7 +14,7 @@ const b = await chromium.launch({ channel: 'chrome' }), errs = [];
 
 // 1. No server credentials: welcome screen, sample preview works.
 { const app = await listen(createApp({ DIST_DIR: 'dist' })), p = await b.newPage(); p.on('pageerror', (e) => errs.push(e.message));
-  await p.goto(app.url); await p.waitForSelector('text=Preview with sample data'); await p.click('text=Preview with sample data'); await p.waitForSelector('.sum');
+  await p.goto(app.url); await p.waitForSelector('text=Preview with sample data'); await p.click('text=Preview with sample data'); await p.waitForSelector('.kpis');
   assert.equal(await p.textContent('#mode'), 'Sample data'); await p.click('[data-t=contacts]'); await p.waitForSelector('.split'); await p.waitForSelector('.leaflet-container'); assert.ok(await p.evaluate(() => typeof L !== 'undefined' && !!document.querySelector('.leaflet-container')), 'map renders from the bundled Leaflet');
   await p.close(); app.s.close(); }
 
@@ -29,7 +29,7 @@ const b = await chromium.launch({ channel: 'chrome' }), errs = [];
 { execFileSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'build', '--outDir', 'dist-ph', '--logLevel', 'error'], { shell: process.platform === 'win32', env: { ...process.env, VITE_POSTHOG_KEY: 'phc_testkey', VITE_POSTHOG_HOST: 'https://ph.example' }, stdio: 'inherit' });
   const app = await listen(createApp({ DIST_DIR: 'dist-ph' })), ctx = await b.newContext({ extraHTTPHeaders: { 'x-faromaker-user-id': 'u_42' } }), p = await ctx.newPage(), events = [];
   await ctx.route('https://ph.example/**', async (r) => { const buf = r.request().postDataBuffer(); if (buf) { let t; try { t = zlib.gunzipSync(buf).toString(); } catch { t = buf.toString(); } if (t.startsWith('data=')) { try { t += '\n' + Buffer.from(decodeURIComponent(t.slice(5)), 'base64').toString(); } catch { /* keep raw */ } } events.push(t); } await r.fulfill({ status: 200, contentType: 'application/json', body: '{"status":1}' }); });
-  await p.goto(app.url); await p.waitForSelector('text=Preview with sample data'); await p.click('text=Preview with sample data'); await p.waitForSelector('.sum');
+  await p.goto(app.url); await p.waitForSelector('text=Preview with sample data'); await p.click('text=Preview with sample data'); await p.waitForSelector('.kpis');
   for (let i = 0; i < 40 && !events.join('').includes('$identify'); i++) await p.waitForTimeout(500);
   const all = events.join('\n'); assert.ok(all.includes('phc_testkey') || all.includes('$identify'), 'PostHog received events: ' + all.slice(0, 300)); assert.ok(all.includes('u_42'), 'identified by FaroMaker user id'); assert.ok(!all.includes('@'), 'no email or other PII');
   await ctx.close(); app.s.close(); }

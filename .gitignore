@@ -5,3 +5,4 @@ dist
 !.env.example
 dist-ph
 dist-single
+local-data/

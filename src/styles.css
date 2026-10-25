@@ -111,3 +111,29 @@ main.wide{max-width:1560px}
 .vc-split{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}.vc-panel{order:-1}.vc-main{min-width:0}
 @media(min-width:900px){.vc-split{grid-template-columns:minmax(0,1fr) 340px}.vc-panel{order:0;position:sticky;top:12px;align-self:start}}
 .vc-map{height:230px;border-radius:10px;overflow:hidden;margin-top:8px;border:1px solid var(--line)}
+/* ---- FarOS layer on the map */
+.fp-dia{display:block;width:12px;height:12px;transform:rotate(45deg);border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3);margin:2px}.fp-dia.hot{width:16px;height:16px;margin:0;border-color:#111827}
+.mapf.fp{border-left:4px solid #F59E0B}.fp-legend{font-size:12px;color:var(--mut)}.fp-legend .lg-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#16A36A;margin-right:4px}.fp-legend .lg-dia{display:inline-block;width:9px;height:9px;transform:rotate(45deg);background:#F59E0B;margin:0 5px 0 2px}
+.maptog-bar{display:none}
+@media(min-width:900px){.maptog-bar{display:flex;justify-content:flex-end;margin:0 0 8px}.split.nomap{grid-template-columns:1fr}.split.nomap .mapcol{display:none!important}}
+.mapf-det summary{cursor:pointer;font:500 13px 'Roboto';color:var(--blue);padding:2px 0}.mapf-det[open] summary{margin-bottom:6px}
+.fchip{padding:2px 9px;font-size:11.5px}
+@media(min-width:900px){#cmap{height:max(380px,calc(100vh - 330px))}}
+/* ---- theme: colour and depth */
+header{background:linear-gradient(120deg,#1B2A3A 0%,#2A3F5F 55%,#3F3D91 100%);border-bottom:3px solid transparent;border-image:linear-gradient(90deg,#FFAB1F,#EC4899,#8B5CF6) 1}
+body{background:radial-gradient(900px 420px at 92% -8%,rgba(139,92,246,.12),transparent 62%),radial-gradient(800px 380px at -6% 4%,rgba(255,171,31,.12),transparent 60%),#f4f5f7;background-attachment:fixed}
+.card{border-radius:14px;box-shadow:0 1px 2px rgba(27,42,58,.06),0 10px 28px rgba(27,42,58,.07);border-color:rgba(27,42,58,.08)}
+.btn.pri{background:linear-gradient(135deg,#FFAB1F,#FF8A3D);border-color:transparent}
+.sum .s{border-radius:14px;border-top:4px solid #7C4DDB}.sum .s:nth-child(2){border-top-color:#2F6FEB}.sum .s:nth-child(3){border-top-color:#16A36A}.sum .s:nth-child(4){border-top-color:#F59E0B}
+/* ---- today */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:0 0 16px}
+.k{position:relative;padding:14px 16px;border-radius:16px;background:#fff;box-shadow:0 1px 2px rgba(27,42,58,.06),0 10px 24px rgba(27,42,58,.07);overflow:hidden;transition:transform .12s}
+.k::before{content:'';position:absolute;inset:0 auto 0 0;width:5px;background:var(--a)}.k::after{content:'';position:absolute;right:-26px;top:-26px;width:96px;height:96px;border-radius:50%;background:var(--a);opacity:.12}
+.k b{display:block;font:600 30px 'Clash Display',Arial;color:var(--a);line-height:1.1}.k span{display:block;font:500 13px 'Roboto';color:var(--blue);margin-top:3px}.k small{display:block;color:var(--mut);font-size:12px}.k:hover{transform:translateY(-2px)}
+.k.red{--a:#E11D48}.k.amber{--a:#F59E0B}.k.blue{--a:#2F6FEB}.k.teal{--a:#0E9AA7}.k.violet{--a:#7C4DDB}.k.green{--a:#16A36A}
+.today-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:4px 0 14px}.greet{font:500 12px 'Roboto';color:#7C4DDB;text-transform:uppercase;letter-spacing:.1em}
+.today-grid{display:grid;gap:16px}.today-map{order:-1}.today-map .tmap{height:300px;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 10px 28px rgba(27,42,58,.1)}
+@media(min-width:900px){.today-grid.withmap{grid-template-columns:minmax(0,1fr) 400px}.today-map{order:0;position:sticky;top:72px;align-self:start}.today-map .tmap{height:440px}}
+.prio.tr-t1{box-shadow:inset 5px 0 0 #F59E0B}.prio.tr-t2{box-shadow:inset 5px 0 0 #2F6FEB}.prio.tr-t3{box-shadow:inset 5px 0 0 #6B7A8C}.prio.tr-tn,.prio.tr-tx{box-shadow:inset 5px 0 0 #E1E5EA}.prio .row{border-bottom:1px solid var(--sunk)}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.vc-filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 6px}.vc-filters select{width:auto;min-width:130px;padding:6px 8px;font-size:13px;border-radius:10px}.vc-filters select.on{border-color:#7C4DDB;box-shadow:0 0 0 2px rgba(124,77,219,.18)}
