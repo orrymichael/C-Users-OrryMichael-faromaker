@@ -58,7 +58,7 @@ const DEFAULTS = { boardId: '4772242488', token: '', msClientId: '', closedColum
 let cfg = { ...DEFAULTS, ...LS.get('necrm-cfg', {}) };
 let data = { contacts: null };
 let tab = 'today', shown = 100, demo = false, closedBy = 'firm';
-const filters = { q: '', tier: '', spec: '', market: '', company: '', poc: '' };
+const filters = { q: '', tier: '', spec: '', market: '', company: '', poc: '', kind: '' };
 let toastT;
 function say(t, cls = '') { document.querySelectorAll('.toast').forEach((x) => x.remove()); const m = el('div', { class: 'toast ' + cls }, t); document.body.append(m); clearTimeout(toastT); toastT = setTimeout(() => m.remove(), cls ? 7000 : 3500); }
 const banner = (t) => { const b = el('div', { class: 'err' }, t); $('#view').prepend(b); };
@@ -289,7 +289,7 @@ const closeSheet = () => $('#sheet').classList.remove('on');
 $('#sheet').addEventListener('click', (e) => { if (e.target.id === 'sheet') closeSheet(); });
 
 // ---------------------------------------------------------------- navigation
-const TABS = [['today', 'Today'], ['contacts', 'Contacts'], ['calendar', 'Calendar'], ['plan', 'Plan'], ['events', 'Events', 1], ['pipeline', 'Pipeline', 1], ['insights', 'Insights', 1], ['capture', 'Capture', 1], ['settings', 'Settings', 1]];
+const TABS = [['today', 'Today'], ['contacts', 'Contacts'], ['calendar', 'Calendar'], ['plan', 'Business Dev'], ['pipeline', 'Vcards'], ['insights', 'Insights', 1], ['capture', 'Capture', 1], ['settings', 'Settings', 1]];
 $('#tabs').replaceChildren(...TABS.filter((t) => !t[2]).map(([k, label]) => el('button', { 'data-t': k, onclick: () => go(k) }, icon(k), label)),
   el('button', { id: 'moreBtn', onclick: () => openMore() }, icon('more'), 'More'),
   ...TABS.filter((t) => t[2]).map(([k, label]) => el('button', { class: 'mi', 'data-t': k, onclick: () => go(k) }, icon(k), label)));
@@ -310,7 +310,7 @@ function render() {
   $('#view').classList.toggle('wide', tab === 'contacts'); updateBell(); $('#fab').hidden = !(cfg.token || demo); $('#fab').onclick = openCreateNew;
   if (!cfg.token && !demo && tab !== 'settings') return renderWelcome();
   if (tab !== lastTab) { lastTab = tab; track('tab_viewed', { tab }); }
-  ({ today: renderToday, contacts: renderContacts, calendar: renderCalendarTab, events: renderEvents, plan: renderPlan, pipeline: renderPipeline, insights: renderInsights, capture: renderCapture, settings: renderSettings })[tab]();
+  ({ today: renderToday, contacts: renderContacts, calendar: renderCalendarTab, events: () => { tab = 'plan'; planView = 'find'; render(); }, plan: renderPlan, pipeline: renderPipeline, insights: renderInsights, capture: renderCapture, settings: renderSettings })[tab]();
 }
 function renderWelcome() {
   $('#view').replaceChildren(el('div', { class: 'panel' }, el('h2', {}, 'Connect to Monday'), el('p', {}, 'Paste your Monday API token once in Settings. It is kept only in this browser on this device.'),
@@ -423,7 +423,7 @@ async function syncNow(force) {
   try { if (force) { msCals.at = 0; for (const k in meetCache) meetCache[k].at = 0; } if (!document.querySelector('#sheet.on')) { if (tab === 'calendar') renderCalendarTab(); else if (tab === 'today') renderToday(); else await ensureMeetings(today(), addDays(today(), 7)); } } finally { syncing = false; }
 }
 setInterval(() => syncNow(false), 18e4); document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - meetSync > 6e4) syncNow(true); }); addEventListener('online', () => syncNow(true));
-const allMeetings = () => { const own = new Set(Object.values(oSent()).map((x) => x.date + '|' + x.title)); return Object.values(meetCache).flatMap((c) => c.list).filter((m) => !own.has(m.day + '|' + m.title)); };
+const allMeetings = () => { const own = new Set(Object.values(oSent()).map((x) => x.date + '|' + x.title)); return Object.values(meetCache).flatMap((c) => c.list).filter((m) => !own.has(m.day + '|' + m.title)).filter(calKeep); };
 const meetingsBetween = (a, b) => allMeetings().filter((m) => m.day >= a && m.day <= b).sort((x, y) => x.day.localeCompare(y.day) || (x.allDay === y.allDay ? x.start - y.start : x.allDay ? -1 : 1));
 const meetingContacts = (m) => data.contacts.list.filter((c) => c.email && m.emails.includes(c.email.toLowerCase()));
 const meetingTime = (m) => (m.allDay ? 'All day' : `${m.start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} – ${m.end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`);
@@ -525,25 +525,11 @@ function renderCalendarTab() {
     : el('div', { class: 'panel', style: 'max-width:none;margin-bottom:12px' }, el('b', {}, 'Outlook is not connected. '), cfg.msClientId ? 'Connect to see your Outlook meetings here, next to follow-ups and events. Once connected it stays connected and syncs by itself.' : 'Add your Azure app (client) ID in Settings to see your Outlook meetings here.',
       el('div', { class: 'bar', style: 'margin:10px 0 0' }, cfg.msClientId ? el('button', { class: 'btn pri', onclick: ms.connect }, 'Connect Outlook') : el('button', { class: 'btn pri', onclick: () => go('settings') }, 'Open Settings')));
   const timed = sel.m, agenda = [...timed.map((mm) => meetingRow(mm)), ...sel.f.map((c) => taskRow(c, calSel)), ...sel.e.map((e) => el('div', { class: 'row', onclick: () => openPlanEvent(e.id) }, el('div', { class: 'who' }, el('strong', {}, e.title), el('small', {}, `Event · ${e.status}${e.venue ? ' · ' + e.venue : ''}`))))];
-  $('#view').replaceChildren(el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', { style: 'font-size:22px' }, 'Calendar'), el('button', { class: 'btn sm', onclick: () => { calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1); calSel = t; renderCalendarTab(); } }, 'Today')), status,
+  $('#view').replaceChildren(el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', { style: 'font-size:22px' }, 'Calendar'), el('button', { class: 'btn sm', onclick: () => { calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1); calSel = t; renderCalendarTab(); } }, 'Today')), status, calRulesBar(d1, d2),
     el('div', { class: 'bar', style: 'justify-content:space-between' }, el('button', { class: 'btn sm', onclick: nav(-1), 'aria-label': 'Previous month' }, '‹'), el('b', {}, calMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })), el('button', { class: 'btn sm', onclick: nav(1), 'aria-label': 'Next month' }, '›')),
     el('div', { class: 'cal' }, cells), el('p', { class: 'hint', style: 'margin:8px 2px' }, el('span', { class: 'lg2 m' }), ' Outlook meetings  ', el('span', { class: 'lg2' }), ' Follow-ups  ', el('span', { class: 'lg2 e' }), ' Planned events'),
     el('div', { class: 'sec-h' }, el('h2', {}, fmtDate(calSel, true)), el('span', { class: 'hint' }, [timed.length && `${timed.length} meeting${timed.length > 1 ? 's' : ''}`, sel.f.length && `${sel.f.length} follow-up${sel.f.length > 1 ? 's' : ''}`].filter(Boolean).join(' · '))),
     agenda.length ? el('div', { class: 'card' }, agenda) : el('div', { class: 'card' }, el('p', { class: 'hint', style: 'padding:14px' }, ready && !err ? 'Nothing scheduled.' : 'No follow-ups or events scheduled.')));
-}
-
-// ---- Pipeline: contacts by tier (drag between columns on desktop; open a contact to change tier on a phone)
-function renderPipeline() {
-  const C = data.contacts; if (!C) return $('#view').replaceChildren(el('p', { class: 'hint' }, 'Loading…'));
-  const R = C.roles, people = C.list.filter(isPerson), labels = (R.tier?.labels || []).map((l) => l.label);
-  if (!R.tier) return $('#view').replaceChildren(el('div', { class: 'panel' }, el('h2', {}, 'No tier column'), el('p', {}, 'The pipeline groups contacts by the board\'s Tier status column, which was not found.')));
-  const cols = [...labels, ...(people.some((c) => !labels.includes(c.tier)) ? [''] : [])];
-  $('#view').replaceChildren(el('div', { class: 'bar' }, el('h2', { style: 'font-size:22px' }, 'Relationship pipeline'), el('span', { class: 'hint' }, 'Drag a card to change tier. On a phone, open the contact.')),
-    el('div', { class: 'kan' }, cols.map((lab) => { const list = people.filter((c) => (labels.includes(c.tier) ? c.tier : '') === lab).sort((a, b) => (dueOf(a) || '9').localeCompare(dueOf(b) || '9'));
-      return el('div', { class: 'kc', ondragover: (e) => { if (lab) { e.preventDefault(); e.currentTarget.classList.add('over'); } }, ondragleave: (e) => e.currentTarget.classList.remove('over'),
-        ondrop: async (e) => { e.preventDefault(); e.currentTarget.classList.remove('over'); const c = C.list.find((x) => x.id === e.dataTransfer.getData('text/plain')); if (!c || !lab || c.tier === lab) return; c.tier = lab; say(await enqueue({ type: 'column', boardId: C.id, itemId: c.id, columnId: R.tier.id, value: { label: lab } })); renderPipeline(); } },
-        el('h3', {}, el('span', {}, lab || 'No tier'), el('span', { class: 'hint' }, list.length)), list.slice(0, 40).map((c) => el('div', { class: 'kd', draggable: true, ondragstart: (e) => e.dataTransfer.setData('text/plain', c.id), onclick: () => openContact(c) },
-          el('strong', {}, c.name), el('small', {}, [c.title, c.company].filter(Boolean).join(' · ')), pocOf(c) && el('small', {}, 'POC ' + pocOf(c)), el('div', {}, dueChip(c)))), list.length > 40 && el('p', { class: 'hint' }, `+${list.length - 40} more (use Contacts)`)); })));
 }
 
 // ---------------------------------------------------------------- contacts
@@ -551,7 +537,7 @@ function renderContacts() {
   const C = data.contacts; if (!C) return $('#view').replaceChildren(el('p', { class: 'hint' }, 'Loading…'));
   const R = C.roles, all = C.list.filter(isPerson);
   const opts = (k) => [...new Set(all.flatMap((c) => (k === 'poc' ? c.pocs : [c[k]])).filter(Boolean))].sort();
-  const match = (c) => (!filters.tier || c.tier === filters.tier) && (!filters.spec || c.specialty === filters.spec) && (!filters.market || c.market === filters.market) && (!filters.company || c.company === filters.company) && (!filters.poc || c.pocs.includes(filters.poc)) && nameOrPhone(filters.q, [c.name, c.company], [c.phone, c.phone2]);
+  const match = (c) => (!filters.tier || c.tier === filters.tier) && (!filters.kind || kindOf(c) === filters.kind) && (!filters.spec || c.specialty === filters.spec) && (!filters.market || c.market === filters.market) && (!filters.company || c.company === filters.company) && (!filters.poc || c.pocs.includes(filters.poc)) && nameOrPhone(filters.q, [c.name, c.company], [c.phone, c.phone2]);
   const active = ['spec', 'market', 'company', 'poc'].filter((k) => filters[k]).length;
   const sel = (k, key, ph) => { const s = el('select', { onchange: (e) => { filters[k] = e.target.value; shown = 100; renderContacts(); } }, el('option', { value: '' }, ph), opts(key).map((o) => el('option', { value: o }, o))); s.value = filters[k]; return s; };
   const search = el('input', { type: 'search', placeholder: 'Name or phone', value: filters.q, oninput: (e) => { filters.q = e.target.value; shown = 100; renderList(); } });
@@ -560,13 +546,13 @@ function renderContacts() {
   const tierNum = (l) => { const m = /tier\s*(\d+)/i.exec(l); return m ? Number(m[1]) : 99; };
   const tiers = (R.tier?.labels || []).filter((l) => l.label && all.some((c) => c.tier === l.label)).sort((a, b) => tierNum(a.label) - tierNum(b.label) || a.label.localeCompare(b.label));
   const pill = (label, key) => el('button', { class: 'tp' + ((filters.tier || '') === key ? ' on' : ''), onclick: () => { filters.tier = filters.tier === key ? '' : key; shown = 100; renderContacts(); } }, label, el('b', {}, key ? all.filter((c) => c.tier === key).length : all.length));
-  const listBox = el('div', { class: 'card' }), count = el('div', { class: 'hint', style: 'margin:8px 2px' });
+  const kpill = (label, key) => el('button', { class: 'tp kp' + ((filters.kind || '') === key ? ' on' : ''), style: '--c:' + KIND_COLOR[key], onclick: () => { filters.kind = filters.kind === key ? '' : key; shown = 100; renderContacts(); } }, label, el('b', {}, all.filter((c) => kindOf(c) === key).length)); const listBox = el('div', { class: 'card' }), count = el('div', { class: 'hint', style: 'margin:8px 2px' });
   const renderList = () => {
     const v = all.filter(match).sort((a, b) => a.name.localeCompare(b.name));
-    listBox.replaceChildren(v.length ? v.slice(0, shown).map((c) => el('div', { class: 'row' + (c.id === cSel ? ' sel' : ''), 'data-id': c.id, onclick: () => (wide() ? selectContact(c, true) : openContact(c)) }, el('div', { class: 'av' }, initials(c.name)),
-      el('div', { class: 'who' }, el('strong', {}, c.name), el('small', {}, [c.title, c.company].filter(Boolean).join(' · ')), pocOf(c) && el('small', {}, 'Faropoint POC: ', el('b', { style: 'color:var(--blue);font-weight:500' }, pocOf(c))), el('div', {}, dueChip(c), tagChip(R.tier, c.tier), tagChip(R.specialty, c.specialty), tagChip(R.market, c.market))),
+    listBox.replaceChildren(v.length ? v.slice(0, shown).map((c) => el('div', { class: 'row tr-' + tierCls(c.tier) + (c.id === cSel ? ' sel' : ''), 'data-id': c.id, onclick: () => (wide() ? selectContact(c, true) : openContact(c)) }, el('div', { class: 'av' }, initials(c.name)),
+      el('div', { class: 'who' }, el('strong', {}, c.name), el('small', {}, [c.title, c.company].filter(Boolean).join(' · ')), pocOf(c) && el('small', {}, 'Faropoint POC: ', el('b', { style: 'color:var(--blue);font-weight:500' }, pocOf(c))), el('div', {}, dueChip(c), tierChip(c), kindChip(c), tagChip(R.market, c.market)), c.phone && el('small', {}, phoneLink(c))),
       el('button', { class: 'btn sm detbtn', title: 'Open the full record', onclick: (e) => { e.stopPropagation(); openContact(c); } }, 'Open'),
-      (c.office || c.addresses.length) && el('button', { class: 'btn round pinbtn', title: 'Show on map', onclick: (e) => { e.stopPropagation(); focusOnMap(c); } }, icon('map')),
+      (officeOf(c) || c.addresses.length || approxPt(c)) && el('button', { class: 'btn round pinbtn', title: 'Show on map', onclick: (e) => { e.stopPropagation(); focusOnMap(c); } }, icon('map')),
       c.phone && el('a', { class: 'btn round', href: telHref(c.phone), title: 'Call', onclick: (e) => e.stopPropagation() }, icon('phone')))) : el('p', { class: 'hint', style: 'padding:16px' }, 'No matches.'),
       v.length > shown && el('div', { style: 'padding:12px' }, el('button', { class: 'btn', onclick: () => { shown += 100; renderList(); } }, `Show more (${v.length - shown})`)));
     count.textContent = `${v.length} of ${all.length} contacts`; curList = v; clearTimeout(mapT); mapT = setTimeout(() => updateMap(v), 250);
@@ -574,7 +560,7 @@ function renderContacts() {
   const mseg = el('div', { class: 'seg seg-m' }, [['list', 'List'], ['map', 'Map']].map(([k, l]) => el('button', { class: mapView === k ? 'on' : '', onclick: () => { mapView = k; split.dataset.v = k; mseg.querySelectorAll('button').forEach((b, i) => b.classList.toggle('on', ['list', 'map'][i] === k)); setTimeout(() => cmap?.invalidateSize(), 50); } }, l)));
   const left = el('div', { class: 'listcol' }, el('div', { class: 'sticky' }, el('div', { class: 'search' }, el('span', { class: 'ic' }, icon('search')), search, fbtn),
     el('div', { id: 'filters', class: active ? 'on' : '' }, sel('spec', 'specialty', R.specialty?.title || 'Specialty'), sel('market', 'market', R.market?.title || 'Market'), sel('company', 'company', 'Company'), R.poc && sel('poc', 'poc', 'Faropoint POC')),
-    el('div', { class: 'pills' }, pill('All', ''), tiers.map((l) => pill(l.label, l.label)))), count, listBox);
+    el('div', { class: 'pills' }, pill('All', ''), tiers.map((l) => pill(l.label, l.label))), el('div', { class: 'pills' }, KINDS.filter((k) => all.some((c) => kindOf(c) === k)).map((k) => kpill(k === 'Principal' ? 'Principals' : k, k)))), count, listBox);
   const split = el('div', { class: 'split', 'data-v': mapView }, left, mapColumn());
   $('#view').replaceChildren(el('div', { class: 'mtop' }, mseg), split); renderList(); setTimeout(() => { ensureMap(); cmap?.invalidateSize(); }, 30);
 }
@@ -844,19 +830,19 @@ async function updateMap(list, openPopup) {
   curList = list; ensureMap(); const run = ++mapRun;
   if (!cmap) { mapStatus.textContent = 'The map library did not load.'; return; }
   cLayer.clearLayers(); cLines.clearLayers(); const pins = new Map(), jobs = [];
-  for (const c of list) { if (mapOn.office && c.office) jobs.push({ c, addr: c.office, kind: 'office' }); if (mapOn.bldg) for (const a of c.addresses) jobs.push({ c, addr: a, kind: 'bldg' }); }
+  for (const c of mapList(list)) { const o = officeOf(c); if (mapOn.office && o) jobs.push({ c, addr: o, kind: 'office' }); else if (mapOn.office && mapF.approx) { const pt = approxPt(c); if (pt) jobs.push({ c, addr: 'approx:' + c.id, kind: 'approx', pt }); } if (mapOn.bldg) for (const a of c.addresses) jobs.push({ c, addr: a, kind: 'bldg' }); }
   jobs.sort((x, y) => (y.c.id === cSel) - (x.c.id === cSel) || (geoPeek(y.addr) !== undefined) - (geoPeek(x.addr) !== undefined));
-  const todo = jobs.slice(0, 500), pending = todo.filter((j) => geoPeek(j.addr) === undefined).length; let done = 0, shown = 0, missing = 0; const pts = [];
+  const todo = jobs.slice(0, 500), pending = todo.filter((j) => !j.pt && geoPeek(j.addr) === undefined).length; let done = 0, shown = 0, missing = 0; const pts = [];
   const lines = () => { cLines.clearLayers(); const p = pins.get(cSel); if (!p) return; const o = p.find((x) => x.kind === 'office'); if (o) p.filter((x) => x.kind === 'bldg').forEach((b) => L.polyline([o.pos, b.pos], { color: '#E07820', weight: 2, dashArray: '4 6', interactive: false }).addTo(cLines)); };
-  const popup = (c) => el('div', { style: 'max-width:240px' }, el('strong', {}, c.name), el('div', {}, [c.title, c.company].filter(Boolean).join(' · ')), c.office && el('div', { class: 'hint' }, 'Office: ' + c.office), c.addresses.length ? el('div', { class: 'hint' }, `${c.addresses.length} closed building${c.addresses.length > 1 ? 's' : ''}`) : null,
+  const popup = (c) => el('div', { style: 'max-width:240px' }, el('strong', {}, c.name), el('div', {}, [c.title, c.company].filter(Boolean).join(' · ')), officeOf(c) ? el('div', { class: 'hint' }, 'Office: ' + officeOf(c)) : el('div', { class: 'hint' }, 'Approximate: ' + (c.market || 'market') + ' area'), c.addresses.length ? el('div', { class: 'hint' }, `${c.addresses.length} closed building${c.addresses.length > 1 ? 's' : ''}`) : null,
     el('div', { class: 'acts', style: 'margin-top:6px' }, el('button', { class: 'btn sm', onclick: () => openContact(c) }, 'Open record'), c.phone && el('a', { class: 'btn sm', href: telHref(c.phone) }, 'Call')));
   const note = () => { mapStatus.textContent = [`${shown} pin${shown === 1 ? '' : 's'}`, pending && done < pending ? `locating ${done}/${pending}…` : '', missing ? `${missing} address${missing > 1 ? 'es' : ''} not found` : '', jobs.length > 500 ? 'first 500 shown' : ''].filter(Boolean).join(' · '); };
   for (const j of todo) {
-    if (run !== mapRun) return; let pos = geoPeek(j.addr);
+    if (run !== mapRun) return; let pos = j.pt ? { lat: j.pt[0], lng: j.pt[1] } : geoPeek(j.addr);
     if (pos === undefined) { pos = await geocode(j.addr); done++; if (run !== mapRun) return; }
     if (!pos) { missing++; note(); continue; }
-    const sel = j.c.id === cSel, off = j.kind === 'office', m = L.circleMarker([pos.lat, pos.lng], { radius: sel ? 11 : off ? 8 : 7, fillColor: off ? '#344050' : '#FFAB1F', fillOpacity: 1, color: sel ? '#E07820' : off ? '#fff' : '#344050', weight: sel ? 3 : 2 }).addTo(cLayer);
-    m.bindPopup(popup(j.c)); m.bindTooltip((off ? 'Office · ' : 'Closed · ') + j.c.name + (off ? '' : ' · ' + j.addr), { direction: 'top' }); m.on('click', () => selectContact(j.c));
+    const sel = j.c.id === cSel, off = j.kind === 'office', apx = j.kind === 'approx', tc = TIER_COLOR[tierCls(j.c.tier)], m = L.circleMarker([pos.lat, pos.lng], { radius: sel ? 11 : off || apx ? 8 : 7, fillColor: off || apx ? tc : '#FFAB1F', fillOpacity: apx ? 0.4 : 1, color: sel ? '#E07820' : apx ? tc : off ? '#fff' : '#344050', weight: sel ? 3 : 2, dashArray: apx ? '3 3' : null }).addTo(cLayer);
+    m.bindPopup(popup(j.c)); m.bindTooltip((apx ? 'Approximate (market area) · ' : off ? 'Office · ' : 'Closed · ') + j.c.name + (off || apx ? '' : ' · ' + j.addr), { direction: 'top' }); m.on('click', () => selectContact(j.c));
     (pins.get(j.c.id) || pins.set(j.c.id, []).get(j.c.id)).push({ kind: j.kind, pos: [pos.lat, pos.lng], m }); shown++; pts.push([pos.lat, pos.lng]);
     if (sel) { lines(); fitTo(pins.get(cSel).map((x) => x.pos)); } else if (!cSel && !userMoved && (shown === 1 || shown % 8 === 0)) fitTo(pts, 11);
     note();
@@ -877,13 +863,6 @@ async function createAddressColumns() {
     const d = await gql('mutation($b:ID!,$t:String!){ create_column(board_id:$b,title:$t,column_type:' + type + '){ id } }', { b: C.id, t: title }); cfg[key] = d.create_column?.id || cfg[key]; }
     LS.set('necrm-cfg', cfg); say('Columns added. Reloading from Monday…'); await load(true); } catch (e) { say(e.message, 'err'); }
 }
-function mapColumn() {
-  const C = data.contacts, R = C.roles, none = !C.list.some((c) => c.office) , tg = (k, label) => { const b = el('label', { style: 'display:inline-flex;gap:6px;align-items:center;font-size:13px;cursor:pointer' }, el('input', { type: 'checkbox', checked: mapOn[k], style: 'width:auto;margin:0', onchange: (e) => { mapOn[k] = e.target.checked; updateMap(curList); } }), label); return b; };
-  return el('div', { class: 'mapcol' }, el('div', { class: 'bar', style: 'margin-bottom:6px' }, tg('office', [el('span', { class: 'lg2', style: 'background:#344050' }), ' Offices']), tg('bldg', [el('span', { class: 'lg2', style: 'background:#FFAB1F' }), ' Closed buildings']), el('span', { class: 'hint' }, 'Select a contact to see their buildings')),
-    none && el('div', { class: 'panel', style: 'max-width:none;margin:0 0 8px;padding:12px' }, el('b', {}, 'No office addresses yet. '), R.office ? 'Fill in the office address column on the board, or type one in a contact\'s record.' : 'Type an office address in any contact\'s record, or add shared columns to the Monday board so the whole team sees them.',
-      !R.office && el('div', { class: 'bar', style: 'margin:8px 0 0' }, el('button', { class: 'btn sm', onclick: createAddressColumns }, 'Add the columns to the board'))), mapHost, mapStatus);
-}
-
 // ---------------------------------------------------------------- Create New: initiatives and events (Monday subitems), from the app or from Outlook
 function openCreateNew() {
   const row = (label, sub, fn) => el('div', { class: 'row', onclick: fn }, el('div', { class: 'who' }, el('strong', {}, label), el('small', {}, sub)));
@@ -988,10 +967,10 @@ function coverage() {
 }
 function renderPlan() {
   const C = data.contacts; if (!C) return $('#view').replaceChildren(el('p', { class: 'hint' }, 'Loading…'));
-  const seg = el('div', { class: 'seg' }, [['overview', 'Overview'], ['events', 'Planned'], ['attended', 'Attended'], ['budget', 'Budget'], ['strategy', 'Strategy']].map(([k, l]) => el('button', { class: planView === k ? 'on' : '', onclick: () => { planView = k; renderPlan(); } }, l)));
-  const head = el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', { style: 'font-size:22px' }, `${plan.year} business development plan`), seg);
+  const seg = el('div', { class: 'seg' }, [['overview', 'Overview'], ['events', 'Planned'], ['attended', 'Attended'], ['find', 'Events'], ['budget', 'Budget'], ['insights', 'Insights'], ['strategy', 'Strategy']].map(([k, l]) => el('button', { class: planView === k ? 'on' : '', onclick: () => { planView = k; renderPlan(); } }, l)));
+  const head = el('div', {}, el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', { style: 'font-size:22px' }, `${plan.year} business development`), workbookButton()), el('div', { class: 'bar' }, seg));
   const note = !demo && el('p', { class: 'hint', style: 'margin:0 2px 12px' }, 'The plan and budget are saved on this device. Use Export on the Strategy tab to back it up or share it.');
-  $('#view').replaceChildren(head, note, { overview: planOverview, events: planEvents, attended: planAttended, budget: planBudgetTab, strategy: planStrategy }[planView]());
+  $('#view').replaceChildren(head, note, { overview: planOverview, events: planEvents, attended: planAttended, find: planFind, budget: planBudgetTab, insights: planInsights, strategy: planStrategy }[planView]());
 }
 // ---------------------------------------------------------------- Budget & Cadence (mirrors the Faropoint BD Plan Workbook; a completed workbook can be imported)
 const lcost = (l) => (Number(l.occ) || 0) * (Number(l.cost) || 0), ltouch = (l) => (Number(l.occ) || 0) * (Number(l.brokers) || 0), lqtr = (l) => (l.month ? Math.ceil((MONTHS.indexOf(l.month) + 1) / 3) || 0 : 0);
@@ -1298,14 +1277,14 @@ function samplePlan() {
 }
 function evDiscover(out) {
   const C = data.contacts; if (!C) return $('#view').replaceChildren(el('p', { class: 'hint' }, 'Loading…'));
-  const inPlan = new Map(plan.events.filter((e) => e.ext).map((e) => [e.ext, e])), all = (evData.events || []).slice().sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || ''))), months = [...new Set(all.map((e) => e.date.slice(0, 7)))].sort();
+  const inPlan = new Map(plan.events.filter((e) => e.ext).map((e) => [e.ext, e])), all = (evNear.on ? evNear.events : (evData.events || [])).slice().sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || ''))), months = [...new Set(all.map((e) => e.date.slice(0, 7)))].sort();
   const list = all.filter((e) => (!evF.cat || e.category === evF.cat) && (!evF.market || e.market === evF.market) && (!evF.month || e.date.startsWith(evF.month)) && (!evF.q || (e.title + ' ' + (e.venue || '')).toLowerCase().includes(evF.q.toLowerCase())));
   const seg = el('div', { class: 'seg' }, [['', 'All'], ['Sports', 'Sports'], ['Concerts', 'Concerts'], ['Comedy', 'Comedy']].map(([k, l]) => el('button', { class: evF.cat === k ? 'on' : '', onclick: () => { evF.cat = k; renderEvents(); } }, l)));
   const msel = el('select', { onchange: (e) => { evF.month = e.target.value; renderEvents(); } }, el('option', { value: '' }, 'All months'), months.map((m) => el('option', { value: m }, parseIso(m + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })))); msel.value = evF.month;
   const q = el('input', { type: 'search', placeholder: 'Search events or venues', value: evF.q, style: 'flex:1 1 200px', onchange: (e) => { evF.q = e.target.value; renderEvents(); } });
   const refresh = el('button', { class: 'btn pri', onclick: async (ev) => { ev.currentTarget.textContent = 'Refreshing…'; await fetchEvents(); renderEvents(); if (evData.errors?.length) say(evData.errors[0], 'err'); else say(`Found ${evData.events.length} events`); } }, evData.at ? 'Refresh feed' : 'Load events');
   const mkSel = el('select', { onchange: (e) => { evF.market = e.target.value; renderEvents(); } }, el('option', { value: '' }, 'All markets'), myMarkets().map((m) => el('option', { value: m.k }, m.n))); mkSel.value = evF.market || '';
-  const none = !all.length && el('div', { class: 'panel', style: 'max-width:none' }, el('h2', {}, 'Northeast and Mid-Atlantic events'), el('p', {}, `Tap Load events to pull ${plan.year} home games for ${myMarkets().map((m) => m.n).join(', ') || 'your markets'}${cfg.tmKey || cfg.sgId ? ', plus concerts, comedy and more from ' + [cfg.tmKey && 'Ticketmaster', cfg.sgId && 'SeatGeek'].filter(Boolean).join(' and ') : ''}.`),
+  const none = !all.length && !evNear.on && el('div', { class: 'panel', style: 'max-width:none' }, el('h2', {}, 'Northeast and Mid-Atlantic events'), el('p', {}, `Tap Load events to pull ${plan.year} home games for ${myMarkets().map((m) => m.n).join(', ') || 'your markets'}${cfg.tmKey || cfg.sgId ? ', plus concerts, comedy and more from ' + [cfg.tmKey && 'Ticketmaster', cfg.sgId && 'SeatGeek'].filter(Boolean).join(' and ') : ''}.`),
     !(cfg.tmKey && cfg.sgId) && el('p', { class: 'hint' }, 'Add a free Ticketmaster key and a SeatGeek client ID in Settings to include concerts, comedy and every other event, with ticket links from both.'));
   let lastM = ''; const rows = list.map((e) => { const m = e.date.slice(0, 7), d = parseIso(e.date), pl = inPlan.get(e.ext), hdr = m !== lastM ? el('div', { class: 'sec-h', style: 'margin:14px 14px 4px' }, el('h2', {}, d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }))) : null; lastM = m;
     return [hdr, el('div', { class: 'evd' }, el('div', { class: 'dt' }, el('b', {}, d.getDate()), el('span', {}, d.toLocaleDateString('en-US', { weekday: 'short' }))),
@@ -1313,7 +1292,7 @@ function evDiscover(out) {
         el('div', {}, el('span', { class: 'chip' }, e.category), e.price ? el('span', { class: 'chip' }, 'from ' + money(e.price)) : null, e.market && el('span', { class: 'chip' }, mname(e.market).split(' / ')[0]), el('span', { class: 'chip' }, [...new Set((e.links || [{ source: e.source }]).map((l) => l.source))].join(' + ')))),
       el('div', { class: 'acts', style: 'flex:none;flex-direction:column;align-items:stretch' }, el('button', { class: 'btn sm', onclick: () => openCompare(e) }, 'Compare prices'), el('button', { class: 'btn sm' + (pl ? '' : ' pri'), onclick: () => pl ? openPlanEvent(pl.id) : openPlanEvent(null, { title: e.title.replace(/ \(sample\)$/, ''), date: e.date, time: e.time, venue: e.venue, category: e.category, url: e.url, unit: e.price || cfg.prices?.[e.category] || '', ext: e.ext, source: [...new Set((e.links || [{ source: e.source }]).map((l) => l.source))].join(' + ') }) }, pl ? 'In plan' : 'Add to plan'),
         (e.links?.length ? e.links.filter((l) => l.url) : e.url ? [{ source: 'Tickets', url: e.url }] : []).map((l) => el('a', { class: 'btn sm', href: l.url, target: '_blank', rel: 'noopener' }, e.links?.length > 1 ? l.source + (l.price ? ' ' + money(l.price) : '') : 'Tickets'))))]; });
-  out.replaceChildren(el('div', { class: 'bar', style: 'justify-content:flex-end' }, refresh), el('div', { class: 'bar' }, seg), el('div', { class: 'bar' }, q, mkSel, msel),
+  out.replaceChildren(nearBar(), el('div', { class: 'bar', style: 'justify-content:flex-end' }, refresh), el('div', { class: 'bar' }, seg), el('div', { class: 'bar' }, q, mkSel, msel),
     evData.at ? el('p', { class: 'hint', style: 'margin:0 2px 8px' }, `Updated ${new Date(evData.at).toLocaleString('en-US')} · ${list.length} of ${all.length} events${evData.errors?.length ? ' · ' + evData.errors.join('; ') : ''}`) : null, none, rows.length ? el('div', { class: 'card' }, rows) : (all.length ? el('p', { class: 'hint' }, 'No events match.') : null));
 }
 
@@ -1444,11 +1423,7 @@ function openCompare(ev) {
   openSheet(el('h2', {}, 'Compare prices'), el('p', { style: 'margin:0 0 10px' }, el('b', {}, q), el('br'), el('small', { class: 'hint' }, [fmtDate(ev.date, true), ev.venue].filter(Boolean).join(' · '))), out, el('div', { class: 'bar' }, el('button', { class: 'btn', onclick: closeSheet }, 'Close')));
   track('prices_compared'); if (!cfg.sgId && !cfg.tmKey) paint([]); else comparePrices(ev).then(paint).catch((er) => out.replaceChildren(el('div', { class: 'err' }, er.message)));
 }
-function renderEvents() {
-  const C = data.contacts; if (!C) return $('#view').replaceChildren(el('p', { class: 'hint' }, 'Loading…'));
-  const body = el('div'), tabs = el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', { style: 'font-size:22px' }, 'Events'), el('div', { class: 'seg' }, [['discover', 'Discover'], ['tickets', 'Tickets & travel'], ['food', 'Food & drink']].map(([k, l]) => el('button', { class: evView === k ? 'on' : '', onclick: () => { evView = k; renderEvents(); } }, l))));
-  $('#view').replaceChildren(tabs, body); ({ discover: evDiscover, tickets: evTickets, food: evFood })[evView](body);
-}
+function renderEvents() { tab = 'plan'; planView = 'find'; renderPlan(); }
 
 // ---------------------------------------------------------------- settings
 function renderSettings() {
@@ -1484,6 +1459,169 @@ function renderSettings() {
       LS.set('necrm-cfg', cfg); if (f.year.value) { plan.year = Number(f.year.value) || plan.year; savePlan(); } demo = false; tab = 'today'; render(); await load(); } }, 'Save and connect'),
       el('button', { class: 'btn', onclick: startDemo }, 'Preview with sample data'), el('button', { class: 'btn', onclick: () => { if (confirm('Remove token, settings, plan and cached data from this device?')) { localStorage.clear(); location.reload(); } } }, 'Sign out and clear')));
 }
+
+// ---------------------------------------------------------------- UI upgrades: colour coding, firm offices and map filters, calendar rules, Business Development sub-tabs, Insights, Vcards
+const tierCls = (t) => (/tier\s*1/i.test(t || '') ? 't1' : /tier\s*2/i.test(t || '') ? 't2' : /tier\s*3/i.test(t || '') ? 't3' : /not active|do not call/i.test(t || '') ? 'tx' : 'tn');
+const TIER_COLOR = { t1: '#F59E0B', t2: '#2F6FEB', t3: '#6B7A8C', tx: '#B8C0CA', tn: '#9AA5B1' };
+const TIER_NAME = { t1: 'Tier 1', t2: 'Tier 2', t3: 'Tier 3', tx: 'Inactive', tn: 'No tier' };
+const KIND_COLOR = { Leasing: '#16A36A', 'Capital Markets': '#7C4DDB', Principal: '#1B2A3A', Vendor: '#0E8A9A', Research: '#8A6D3B', Other: '#8793A1' };
+const KINDS = ['Leasing', 'Capital Markets', 'Principal', 'Vendor'];
+const grpTitle = (c) => (c.group && c.group.title) || '';
+function kindOf(c) { // segment used for colour coding; derived from the Primary Value label and the board group
+  const s = (c.specialty || '').toLowerCase(), g = grpTitle(c).toLowerCase();
+  if (/vendor|service provider|attorney|legal|engineer|inspection|contractor|architect|consultant/.test(s + ' ' + g)) return 'Vendor';
+  if (/principal|peer/.test(g) || /developer|family office|investment manager|public reit|principal|owner/.test(s)) return 'Principal';
+  if (/leasing/.test(s)) return 'Leasing';
+  if (/capital markets|investment sales|net lease|debt|equity|street broker/.test(s)) return 'Capital Markets';
+  if (/research/.test(s)) return 'Research';
+  return 'Other';
+}
+const chipC = (txt, color, cls = '') => el('span', { class: 'chip cc ' + cls, style: `background:${color}` }, txt);
+const tierChip = (c) => (c.tier ? chipC(c.tier, TIER_COLOR[tierCls(c.tier)], tierCls(c.tier) === 't1' ? 'dk' : '') : null);
+const kindChip = (c) => { const k = kindOf(c); return k === 'Other' ? null : chipC(k === 'Principal' ? 'Principal' : k, KIND_COLOR[k]); };
+const phoneLink = (c) => (c.phone ? el('a', { class: 'plink', href: telHref(c.phone), title: 'Call with your computer (Bluetooth or Phone Link)', onclick: (e) => e.stopPropagation() }, fmtPhone(c.phone)) : null);
+
+// ---- firm offices: one address per firm gives every contact at that firm a map pin; a contact's own office address wins
+const firmKey = (n) => (n || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+const firmOffices = () => (firmOffices.c ||= LS.get('necrm-firm-office', {}));
+const officeOf = (c) => c.office || firmOffices()[firmKey(c.company)] || '';
+const MARKET_PT = { 'Greater Philadelphia': [39.9526, -75.1652], 'Northern NJ': [40.8, -74.1], 'Central NJ': [40.45, -74.45], 'Northern & Central NJ': [40.6, -74.3], Baltimore: [39.2904, -76.6122], 'Greater New York': [40.7549, -73.984], 'NYC Boroughs': [40.7306, -73.9352], 'Tri-State Area': [40.75, -74.0], Boston: [42.3601, -71.0589], 'Long Island': [40.79, -73.2], 'Lehigh Valley': [40.6, -75.47], 'Washington D.C.': [38.9072, -77.0369], NoVA: [38.88, -77.17], Connecticut: [41.3, -72.9], 'Lower Hudson Valley': [41.1, -73.8], 'Mid-Atlantic': [39.5, -76.4] };
+const hash01 = (s) => { let h = 0; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) | 0; return (h >>> 0) % 1000 / 1000; };
+const approxPt = (c) => { const p = MARKET_PT[c.market]; return p ? [p[0] + (hash01(c.id + 'a') - 0.5) * 0.07, p[1] + (hash01(c.id + 'b') - 0.5) * 0.09] : null; };
+const mapF = { tiers: new Set(), kinds: new Set(), market: '', approx: true };
+const mapList = (list) => list.filter((c) => (!mapF.tiers.size || mapF.tiers.has(tierCls(c.tier))) && (!mapF.kinds.size || mapF.kinds.has(kindOf(c))) && (!mapF.market || c.market === mapF.market));
+function openFirmOffices() {
+  const C = data.contacts, firms = new Map();
+  for (const c of C.list.filter(isPerson)) { if (!c.company) continue; const k = firmKey(c.company), f = firms.get(k) || { name: c.company, n: 0, mk: new Map() }; f.n++; if (c.market) f.mk.set(c.market, (f.mk.get(c.market) || 0) + 1); firms.set(k, f); }
+  const list = [...firms.entries()].sort((a, b) => b[1].n - a[1].n), box = el('div', {}), q = el('input', { type: 'search', placeholder: 'Find a firm', style: 'width:100%' });
+  const draw = () => box.replaceChildren(list.filter(([, f]) => !q.value || f.name.toLowerCase().includes(q.value.toLowerCase())).slice(0, 80).map(([k, f]) => {
+    const inp = el('input', { placeholder: 'Street, City, ST ZIP', value: firmOffices()[k] || '', style: 'width:100%', onchange: async (e) => { const v = e.target.value.trim(), m = firmOffices(); if (v) m[k] = v; else delete m[k]; LS.set('necrm-firm-office', m); if (v) { inp.classList.remove('bad'); const p = await geocode(v); inp.classList.toggle('bad', !p); inp.title = p ? 'Located' : 'Could not locate this address'; } } });
+    return el('div', { class: 'f', style: 'margin:8px 0' }, el('label', {}, `${f.name} · ${f.n} contact${f.n > 1 ? 's' : ''}${f.mk.size ? ' · ' + [...f.mk.entries()].sort((a, b) => b[1] - a[1])[0][0] : ''}`), inp); }));
+  q.addEventListener('input', draw); draw();
+  openSheet(el('h2', {}, 'Firm office addresses'), el('p', { class: 'hint' }, 'Enter one office address per firm and every contact at that firm gets a pin. A contact\'s own office address still takes priority. Saved on this device.'), q, box,
+    el('div', { class: 'bar' }, el('button', { class: 'btn pri', onclick: () => { closeSheet(); updateMap(curList); } }, 'Done')));
+}
+function mapColumn() {
+  const C = data.contacts, none = !C.list.some((c) => officeOf(c) || c.addresses.length);
+  const chip = (set, key, label, color) => { const b = el('button', { class: 'fchip' + (set.has(key) ? ' on' : ''), style: `--c:${color}`, onclick: () => { set.has(key) ? set.delete(key) : set.add(key); b.classList.toggle('on'); updateMap(curList); } }, label); return b; };
+  const tg = (get, set, label) => el('label', { class: 'mtg' }, el('input', { type: 'checkbox', checked: get(), onchange: (e) => { set(e.target.checked); updateMap(curList); } }), label);
+  const mk = el('select', { onchange: (e) => { mapF.market = e.target.value; updateMap(curList); } }, el('option', { value: '' }, 'All markets'), [...new Set(C.list.map((c) => c.market).filter(Boolean))].sort().map((m) => el('option', { value: m }, m))); mk.value = mapF.market;
+  return el('div', { class: 'mapcol' }, el('div', { class: 'mapf' },
+    el('div', { class: 'mrow' }, el('b', {}, 'Tier'), ['t1', 't2', 't3', 'tx', 'tn'].map((k) => chip(mapF.tiers, k, TIER_NAME[k], TIER_COLOR[k]))),
+    el('div', { class: 'mrow' }, el('b', {}, 'Type'), KINDS.map((k) => chip(mapF.kinds, k, k === 'Principal' ? 'Principals' : k, KIND_COLOR[k])), mk),
+    el('div', { class: 'mrow' }, tg(() => mapOn.office, (v) => (mapOn.office = v), 'Offices'), tg(() => mapOn.bldg, (v) => (mapOn.bldg = v), 'Closed buildings'), tg(() => mapF.approx, (v) => (mapF.approx = v), 'Approximate (market area)'), el('button', { class: 'btn sm', onclick: openFirmOffices }, 'Set firm offices'))),
+    none && el('div', { class: 'panel', style: 'max-width:none;margin:0 0 8px;padding:12px' }, el('b', {}, 'No office addresses on the board yet. '), 'Faded pins show each contact\'s market area. Use Set firm offices to enter one address per firm and every contact at that firm is placed exactly.'),
+    mapHost, mapStatus);
+}
+
+// ---- calendar: only Outlook events that include a CRM contact, with keywords deciding what is kept
+const CAL_DEF = { pos: 'lunch, dinner, breakfast, coffee, drinks, happy hour, golf, tour, site visit, market visit, market update, catch up, catch-up, intro, introduction, broker, reception, cocktail, outing, game, conference', neg: 'all hands, all-hands, town hall, webinar, training, stand-up, standup, team meeting, staff meeting, holiday, out of office, ooo, payroll, compliance, interview, onboarding, investment committee, ic meeting, board meeting, lpac, focus time, office hours, fire drill' };
+const calWords = (s) => String(s || '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
+const calHas = (txt, words) => { const t = ' ' + String(txt || '').toLowerCase() + ' '; return words.some((w) => t.includes(w)); };
+function calKeep(m) { // a CRM contact must be on the invite; a corporate or ad hoc keyword drops it unless it also has a relationship keyword
+  if (cfg.calAll) return true; if (!data.contacts || !meetingContacts(m).length) return false;
+  const pos = calWords(cfg.calPos ?? CAL_DEF.pos), neg = calWords(cfg.calNeg ?? CAL_DEF.neg); return !(calHas(m.title, neg) && !calHas(m.title, pos));
+}
+const hiddenMeetings = (a, b) => { const all = Object.values(meetCache).flatMap((c) => c.list).filter((m) => m.day >= a && m.day <= b); return all.length - all.filter(calKeep).length; };
+function openCalKeywords() {
+  const pos = el('textarea', { rows: 4, style: 'width:100%' }), neg = el('textarea', { rows: 4, style: 'width:100%' }); pos.value = cfg.calPos ?? CAL_DEF.pos; neg.value = cfg.calNeg ?? CAL_DEF.neg;
+  const all = el('input', { type: 'checkbox', checked: !!cfg.calAll, style: 'width:auto' });
+  openSheet(el('h2', {}, 'Calendar rules'), el('p', { class: 'hint' }, 'The calendar shows an Outlook event only when a contact from the CRM (matched by email) is on the invite. A skip keyword hides it unless the title also has a keep keyword. Separate words with commas.'),
+    el('div', { class: 'f' }, el('label', {}, 'Keep keywords (relationship events)'), pos), el('div', { class: 'f' }, el('label', {}, 'Skip keywords (corporate or ad hoc)'), neg),
+    el('label', { class: 'mtg', style: 'margin:8px 0' }, all, 'Show every Outlook event (turn the filter off)'),
+    el('div', { class: 'bar' }, el('button', { class: 'btn pri', onclick: () => { cfg.calPos = pos.value; cfg.calNeg = neg.value; cfg.calAll = all.checked; LS.set('necrm-cfg', cfg); closeSheet(); render(); } }, 'Save'), el('button', { class: 'btn', onclick: () => { delete cfg.calPos; delete cfg.calNeg; cfg.calAll = false; LS.set('necrm-cfg', cfg); closeSheet(); render(); } }, 'Reset to defaults'), el('button', { class: 'btn', onclick: closeSheet }, 'Cancel')));
+}
+function calRulesBar(d1, d2) {
+  if (!outlookReady()) return null; const h = hiddenMeetings(d1, d2);
+  return el('div', { class: 'bar', style: 'margin:0 0 10px' }, el('span', { class: 'hint' }, cfg.calAll ? 'Showing every Outlook event.' : `Showing Outlook events with a CRM contact${h ? ` · ${h} other event${h > 1 ? 's' : ''} hidden` : ''}. Follow-ups follow each contact's cadence.`), el('button', { class: 'btn sm', onclick: openCalKeywords }, 'Calendar rules'));
+}
+
+// ---- Business Development: Events (search near a place) and Insights
+const evNear = { on: false, q: '', mi: 25, events: [], err: '', busy: false, at: 0 };
+const milesBetween = (a, b) => { const R = 3958.8, r = Math.PI / 180, dl = (b[0] - a[0]) * r, dg = (b[1] - a[1]) * r, x = Math.sin(dl / 2) ** 2 + Math.cos(a[0] * r) * Math.cos(b[0] * r) * Math.sin(dg / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(x)); };
+async function nearFetch(place, mi) {
+  const pos = await geocode(place); if (!pos) throw new Error('Could not find that place. Try a city and state, or a street address.');
+  const here = [pos.lat, pos.lng], now = new Date().toISOString().slice(0, 19) + 'Z', out = [];
+  if (demo) { for (const e of sampleEvents()) { const m = MARKETS.find((x) => x.k === e.market); if (m && milesBetween(here, m.ll) <= mi) out.push({ ...e, venue: `${e.venue} · ${Math.round(milesBetween(here, m.ll))} mi` }); } return out; }
+  if (cfg.tmKey) { try { for (let page = 0; page < 2; page++) { const j = await jget('https://app.ticketmaster.com/discovery/v2/events.json?' + new URLSearchParams({ apikey: cfg.tmKey, latlong: `${pos.lat},${pos.lng}`, radius: String(mi), unit: 'miles', size: '100', page: String(page), sort: 'date,asc', startDateTime: now }));
+      for (const e of j._embedded?.events || []) { const v = e._embedded?.venues?.[0], seg = e.classifications?.[0]?.segment?.name || '', gen = e.classifications?.[0]?.genre?.name || '', cat = /sport/i.test(seg) ? 'Sports' : /music/i.test(seg) ? 'Concerts' : /comed/i.test(gen + ' ' + e.name) ? 'Comedy' : '', pr = e.priceRanges?.[0], ll = v?.location ? [+v.location.latitude, +v.location.longitude] : null; if (!cat) continue;
+        out.push({ ext: 'tm:' + e.id, title: e.name, date: e.dates?.start?.localDate || '', time: (e.dates?.start?.localTime || '').slice(0, 5), venue: [v?.name, v?.city?.name].filter(Boolean).join(', ') + (ll ? ` · ${Math.round(milesBetween(here, ll))} mi` : ''), category: cat, url: e.url || '', price: pr?.min || 0, source: 'Ticketmaster', links: [{ source: 'Ticketmaster', url: e.url || '', price: pr?.min || 0, id: 'tm:' + e.id }] }); }
+      if (page + 1 >= (j.page?.totalPages || 0)) break; await sleep(250); } } catch (e) { evNear.err = 'Ticketmaster: ' + e.message; } }
+  if (cfg.sgId) { try { const j = await jget('https://api.seatgeek.com/2/events?' + new URLSearchParams({ client_id: cfg.sgId, lat: String(pos.lat), lon: String(pos.lng), range: mi + 'mi', per_page: '100', sort: 'datetime_local.asc', 'datetime_local.gte': now.slice(0, 19) }));
+      for (const e of j.events || []) { const tx = (e.taxonomies || []).map((t) => t.name).join(' ') + ' ' + (e.type || ''), cat = /comedy/i.test(tx) ? 'Comedy' : /concert|music/i.test(tx) ? 'Concerts' : /sport|mlb|nfl|nba|nhl|ncaa|mls/i.test(tx) ? 'Sports' : ''; if (!cat) continue; const ll = e.venue?.location ? [e.venue.location.lat, e.venue.location.lon] : null;
+        out.push({ ext: 'sg:' + e.id, title: e.title, date: (e.datetime_local || '').slice(0, 10), time: (e.datetime_local || '').slice(11, 16), venue: [e.venue?.name, e.venue?.city].filter(Boolean).join(', ') + (ll ? ` · ${Math.round(milesBetween(here, ll))} mi` : ''), category: cat, url: e.url || '', price: e.stats?.lowest_price || 0, source: 'SeatGeek', links: [{ source: 'SeatGeek', url: e.url || '', price: e.stats?.lowest_price || 0, id: 'sg:' + e.id }] }); } } catch (e) { evNear.err = (evNear.err ? evNear.err + '; ' : '') + 'SeatGeek: ' + e.message; } }
+  return out.filter((e) => e.date).sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+}
+function nearBar() {
+  const q = el('input', { type: 'search', placeholder: 'Near: city, address or venue (e.g. Newark, NJ)', value: evNear.q, style: 'flex:1 1 220px' }), mi = el('select', {}, [10, 25, 50, 100].map((n) => el('option', { value: n }, n + ' miles'))); mi.value = String(evNear.mi);
+  const go2 = async () => { if (!q.value.trim()) return say('Type a place first', 'err'); Object.assign(evNear, { q: q.value.trim(), mi: Number(mi.value), busy: true, err: '' }); evNear.on = true; renderEvents();
+    try { evNear.events = await nearFetch(evNear.q, evNear.mi); evNear.at = Date.now(); } catch (e) { evNear.err = e.message; evNear.events = []; } evNear.busy = false; renderEvents(); };
+  q.addEventListener('keydown', (e) => { if (e.key === 'Enter') go2(); });
+  return el('div', { class: 'card', style: 'padding:12px;margin-bottom:10px' }, el('div', { class: 'bar', style: 'margin:0' }, q, mi, el('button', { class: 'btn pri', onclick: go2 }, evNear.busy ? 'Searching…' : 'Search near'),
+    evNear.on && el('button', { class: 'btn', onclick: () => { evNear.on = false; renderEvents(); } }, 'Back to my markets')),
+    el('p', { class: 'hint', style: 'margin:6px 2px 0' }, evNear.on ? `${evNear.events.length} sports, concert and comedy events within ${evNear.mi} miles of ${evNear.q}${evNear.err ? ' · ' + evNear.err : ''}${!demo && !cfg.tmKey && !cfg.sgId ? ' · Add a Ticketmaster key or SeatGeek client ID in Settings to search by place.' : ''}` : 'Search any place and radius, or use your saved markets below.'));
+}
+function planFind() {
+  const body = el('div'), seg = el('div', { class: 'seg' }, [['discover', 'Search & discover'], ['tickets', 'Tickets & travel'], ['food', 'Food & drink']].map(([k, l]) => el('button', { class: evView === k ? 'on' : '', onclick: () => { evView = k; renderPlan(); } }, l)));
+  ({ discover: evDiscover, tickets: evTickets, food: evFood })[evView](body); return el('div', {}, el('div', { class: 'bar' }, seg), body);
+}
+const tally = (pairs) => { const m = new Map(); for (const [k, v] of pairs) m.set(k, (m.get(k) || 0) + v); return [...m.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value); };
+function barList(rows, { fmt = (v) => v, color = '#344050', max = 8 } = {}) {
+  const top = rows.slice(0, max), mx = Math.max(1, ...top.map((r) => r.value));
+  return top.length ? el('div', { class: 'bars' }, top.map((r) => el('div', { class: 'brow' }, el('span', { class: 'bl', title: r.label }, r.label), el('div', { class: 'bt' }, el('i', { style: `width:${Math.max(3, r.value / mx * 100)}%;background:${color}` })), el('b', {}, fmt(r.value))))) : el('p', { class: 'hint' }, 'No data yet.');
+}
+let insYear = 0;
+function planInsights() {
+  const C = data.contacts, t = today(), byId = new Map(C.list.map((c) => [c.id, c]));
+  const bd = (C.bd?.events || []).filter((e) => ATTENDED.test(e.status) && e.start), years = [...new Set([...bd.map((e) => e.start.slice(0, 4)), ...plan.events.map((e) => (e.date || '').slice(0, 4))].filter(Boolean))].sort().reverse();
+  if (!insYear || !years.includes(String(insYear))) insYear = Number(years.includes(String(plan.year)) ? plan.year : years[0] || plan.year);
+  const yr = String(insYear), ysel = el('select', { onchange: (e) => { insYear = Number(e.target.value); renderPlan(); } }, (years.length ? years : [yr]).map((y) => el('option', { value: y }, y))); ysel.value = yr;
+  const pe = plan.events.filter((e) => (e.date || '').startsWith(yr) && e.status !== 'Cancelled'), pAtt = pe.filter((e) => e.status === 'Attended'), com = pe.filter((e) => COMMITTED.includes(e.status)), bAtt = bd.filter((e) => e.start.startsWith(yr));
+  const guestsOf = (e) => (e.guests || []).map((id) => byId.get(id)).filter(Boolean), slots = (e) => Math.max((e.guests || []).length, 0);
+  const attended = [...bAtt.map((e) => ({ region: e.region || 'Not set', type: e.type || 'Not set', firms: (e.firm || '').split(/[,/&;]|\band\b/i).map((x) => x.trim()).filter((x) => x && !/^(na|n\/a|none|-)$/i.test(x)), q: Math.ceil(Number(e.start.slice(5, 7)) / 3), owners: e.owners })),
+    ...pAtt.map((e) => ({ region: mname(e.market) || e.market || 'Not set', type: e.etype || defaultEType(e.category), firms: [...new Set(guestsOf(e).map((c) => c.company).filter(Boolean))], q: Math.ceil(Number(e.date.slice(5, 7)) / 3), owners: [] }))];
+  const spend = com.reduce((a, e) => a + evCost(e), 0), costed = com.filter((e) => evCost(e) > 0), allSlots = com.reduce((a, e) => a + slots(e), 0), cov = coverage(), people = C.list.filter(isPerson), d90 = addDays(t, -90);
+  const touched = people.filter((c) => c.last && c.last >= d90).length, overdue = dueLists().over.length, total = Number(plan.total) || 0;
+  const kpi = (n, l, sub) => el('div', { class: 's' }, el('b', {}, n), el('span', {}, l), sub && el('small', { class: 'hint' }, sub));
+  const spendBy = (keyFn) => tally(com.flatMap((e) => { const gs = guestsOf(e), keys = keyFn(e, gs); const c = evCost(e); return keys.length ? keys.map((k) => [k, c / keys.length]) : [['No guests logged', c]]; })).map((r) => ({ ...r, value: Math.round(r.value) }));
+  const card = (h, sub, node) => el('div', { class: 'card chart' }, el('h2', {}, h), sub && el('div', { class: 'sub' }, sub), node);
+  return el('div', {},
+    el('div', { class: 'bar', style: 'justify-content:space-between' }, el('span', { class: 'hint' }, 'Events attended come from the Business Development items on the board and from your plan. Spend comes from the plan.'), el('div', { class: 'bar', style: 'margin:0' }, el('b', {}, 'Year'), ysel)),
+    el('div', { class: 'sum' }, kpi(attended.length, 'Events attended'), kpi(money(spend), 'Event spend', `${com.length} booked or attended`), kpi(costed.length ? money(spend / costed.length) : '—', 'Avg cost per event'), kpi(allSlots ? money(spend / allSlots) : '—', 'Cost per guest invited', `${allSlots} invitations`)),
+    el('div', { class: 'sum' }, kpi(cov.tops.length ? Math.round(cov.covered.length / cov.tops.length * 100) + '%' : '—', 'Tier 1 invited to an event', `${cov.covered.length} of ${cov.tops.length}`), kpi(people.length ? Math.round(touched / people.length * 100) + '%' : '—', 'Contacted in last 90 days', `${touched} of ${people.length}`), kpi(overdue, 'Overdue follow-ups', undefined), kpi(total ? Math.round(spend / total * 100) + '%' : '—', 'Of annual budget spent', total ? money(total) + ' target' : 'No target set')),
+    card('Events attended by region', 'Counts from the board and the plan.', barList(tally(attended.map((a) => [a.region, 1])), { color: '#344050' })),
+    card('Events attended by relationship', 'The firm or relationship named on each event.', barList(tally(attended.flatMap((a) => a.firms.map((f) => [f, 1]))), { color: '#2F6FEB', max: 10 })),
+    card('Events attended by event type', null, barList(tally(attended.map((a) => [a.type, 1])), { color: '#7C4DDB' })),
+    card('Who we have spent the most on (company)', 'Each event cost is split across the companies of the guests invited.', barList(spendBy((e, gs) => [...new Set(gs.map((c) => c.company).filter(Boolean))]), { fmt: money, color: '#F59E0B', max: 10 })),
+    card('Who we have spent the most on (contact)', 'Each event cost is split across the guests invited.', barList(spendBy((e, gs) => gs.map((c) => c.name)), { fmt: money, color: '#16A36A', max: 10 })),
+    card('Spend by event type', null, barList(tally(com.map((e) => [e.etype || defaultEType(e.category), evCost(e)])).map((r) => ({ ...r, value: Math.round(r.value) })), { fmt: money, color: '#0E8A9A' })),
+    card('Events attended by quarter', null, barList([1, 2, 3, 4].map((q) => ({ label: 'Q' + q, value: attended.filter((a) => a.q === q).length })), { color: '#1B2A3A', max: 4 })));
+}
+// drop a completed BD Plan Workbook anywhere on the Business Development tab and it is read straight away
+$('#view').addEventListener('dragover', (e) => { if (tab === 'plan' && e.dataTransfer?.types?.includes('Files')) e.preventDefault(); });
+$('#view').addEventListener('drop', async (e) => { if (tab !== 'plan') return; const f = [...(e.dataTransfer?.files || [])].find((x) => /\.xlsx$/i.test(x.name)); if (!f) return; e.preventDefault(); try { previewWorkbook(await parseWorkbook(f), f.name); } catch (er) { say('Could not read that workbook: ' + er.message, 'err'); } });
+const workbookButton = () => { const wb = el('input', { type: 'file', accept: '.xlsx', hidden: true, onchange: async (e) => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { previewWorkbook(await parseWorkbook(f), f.name); } catch (er) { say('Could not read that workbook: ' + er.message, 'err'); } } }); return el('span', {}, el('button', { class: 'btn sm', title: 'Upload the completed BD Plan Workbook, or drop the file anywhere on this tab', onclick: () => wb.click() }, 'Upload BD workbook (.xlsx)'), wb); };
+
+// ---- Vcards: contacts as cards by tier; drag a card to another tier to re-tier it
+const vcF = { q: '', kind: '' };
+function renderPipeline() {
+  const C = data.contacts; if (!C) return $('#view').replaceChildren(el('p', { class: 'hint' }, 'Loading…'));
+  const R = C.roles, people = C.list.filter(isPerson), labels = (R.tier?.labels || []).map((l) => l.label).filter(Boolean);
+  if (!R.tier) return $('#view').replaceChildren(el('div', { class: 'panel' }, el('h2', {}, 'No tier column'), el('p', {}, 'Vcards groups contacts by the board\'s Tier status column, which was not found.')));
+  const tn = (l) => { const m = /tier\s*(\d+)/i.exec(l); return m ? Number(m[1]) : 99; }, ok = (c) => (!vcF.kind || kindOf(c) === vcF.kind) && (!vcF.q || nameOrPhone(vcF.q, [c.name, c.company], [c.phone, c.phone2]));
+  const cols = labels.filter((l) => people.some((c) => c.tier === l) || tn(l) < 99).sort((a, b) => tn(a) - tn(b) || a.localeCompare(b)); if (people.some((c) => !labels.includes(c.tier))) cols.push('');
+  const board = el('div', { class: 'kan' }, cols.map((lab) => { const all = people.filter((c) => (labels.includes(c.tier) ? c.tier : '') === lab), list = all.filter(ok).sort((a, b) => (dueOf(a) || '9').localeCompare(dueOf(b) || '9')), tc = TIER_COLOR[tierCls(lab)];
+    return el('div', { class: 'kc', style: `--tc:${tc}`, ondragover: (e) => { if (lab) { e.preventDefault(); e.currentTarget.classList.add('over'); } }, ondragleave: (e) => e.currentTarget.classList.remove('over'),
+      ondrop: async (e) => { e.preventDefault(); e.currentTarget.classList.remove('over'); const c = C.list.find((x) => x.id === e.dataTransfer.getData('text/plain')); if (!c || !lab || c.tier === lab) return; c.tier = lab; say(await enqueue({ type: 'column', boardId: C.id, itemId: c.id, columnId: R.tier.id, value: { label: lab } })); renderPipeline(); } },
+      el('h3', {}, el('span', {}, lab || 'No tier'), el('span', { class: 'cnt' }, list.length === all.length ? list.length : `${list.length} of ${all.length}`)),
+      list.slice(0, 40).map((c) => { const k = kindOf(c); return el('div', { class: 'kd', draggable: true, ondragstart: (e) => e.dataTransfer.setData('text/plain', c.id), onclick: () => openContact(c) },
+        el('div', { class: 'kd-top' }, el('div', { class: 'av', style: `background:${KIND_COLOR[k]};color:#fff` }, initials(c.name)), el('div', { class: 'kd-who' }, el('strong', {}, c.name), el('small', {}, [c.title, c.company].filter(Boolean).join(' · '))), c.phone && el('a', { class: 'btn round', href: telHref(c.phone), title: 'Call', onclick: (e) => e.stopPropagation() }, icon('phone'))),
+        el('div', { class: 'kd-bot' }, kindChip(c), dueChip(c), pocOf(c) && el('small', {}, 'POC ' + pocOf(c)))); }), list.length > 40 && el('p', { class: 'hint' }, `+${list.length - 40} more (narrow with search or type)`)); }));
+  const search = el('input', { type: 'search', placeholder: 'Search name, company or phone', value: vcF.q, style: 'flex:1 1 200px', oninput: (e) => { vcF.q = e.target.value; clearTimeout(vcT); vcT = setTimeout(renderPipeline, 250); } });
+  const pills = el('div', { class: 'pills' }, [['', 'All']].concat(KINDS.filter((k) => people.some((c) => kindOf(c) === k)).map((k) => [k, k === 'Principal' ? 'Principals' : k])).map(([k, l]) => el('button', { class: 'tp' + (vcF.kind === k ? ' on' : ''), style: k ? `--c:${KIND_COLOR[k]}` : '', onclick: () => { vcF.kind = k; renderPipeline(); } }, l)));
+  $('#view').replaceChildren(el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', { style: 'font-size:22px' }, 'Vcards'), el('span', { class: 'hint' }, 'Drag a card to another tier to change it. On a phone, open the contact.')), el('div', { class: 'bar' }, search), pills, board);
+}
+let vcT = 0;
 
 // ---------------------------------------------------------------- boot
 $('#mode').onclick = async () => { if (!cfg.token || demo) return; await flush(); await load(); say('Refreshed from Monday'); };

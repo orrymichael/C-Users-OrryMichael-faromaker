@@ -68,3 +68,27 @@ main.wide{max-width:1560px}
 #fab{position:fixed;right:16px;bottom:calc(80px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;border:0;background:var(--orange);color:var(--ink);font:400 32px/1 'Roboto',Arial;box-shadow:0 4px 14px rgba(52,64,80,.3);cursor:pointer;z-index:25}
 @media(min-width:900px){#fab{bottom:24px;right:24px}.tabs .mi{display:flex}#moreBtn{display:none!important}}
 @media(min-width:900px){body{padding-bottom:0}.tabs{position:static;background:none;border:0;padding:0;margin-left:auto}.tabs button{background:none;color:#D6D9DC;flex-direction:row;gap:8px;padding:8px 14px;border-radius:8px;font-size:13px;box-shadow:none!important}.tabs button.on{background:rgba(255,255,255,.14);color:#fff}header .t{flex:none}.toast{bottom:24px}}
+
+/* ---- colour coding: tiers and segments */
+.row.tr-t1{box-shadow:inset 5px 0 0 #F59E0B}.row.tr-t2{box-shadow:inset 5px 0 0 #2F6FEB}.row.tr-t3{box-shadow:inset 5px 0 0 #6B7A8C}.row.tr-tx{box-shadow:inset 5px 0 0 #B8C0CA;opacity:.78}.row.tr-tn{box-shadow:inset 5px 0 0 #E1E5EA}
+.chip.cc{color:#fff;font-weight:500}.chip.cc.dk{color:#2F2F2F}
+.plink{font-size:13px;color:#1D5FD1;text-decoration:none;font-weight:500}.plink:hover{text-decoration:underline}
+.tp.kp{border-color:var(--c)}.tp.kp.on{background:var(--c);border-color:var(--c);color:#fff}
+/* ---- map filters */
+.mapf{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px}
+.mapf .mrow{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:4px 0}.mapf .mrow>b{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);min-width:34px}
+.mapf select{width:auto;min-width:130px;padding:5px 8px;font-size:13px}
+.fchip{border:1.5px solid var(--c);background:#fff;color:var(--blue);border-radius:999px;padding:3px 11px;font:500 12px 'Roboto';cursor:pointer}.fchip.on{background:var(--c);color:#fff}
+.mtg{display:inline-flex;gap:6px;align-items:center;font-size:13px;cursor:pointer}.mtg input{width:auto;margin:0}
+/* ---- business development insights */
+.bars{margin-top:8px}.brow{display:grid;grid-template-columns:minmax(90px,34%) 1fr auto;gap:10px;align-items:center;margin:7px 0;font-size:13px}
+.brow .bl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--blue)}.brow .bt{background:var(--sunk);border-radius:6px;height:14px}.brow .bt i{display:block;height:14px;border-radius:6px}.brow b{color:var(--blue);font-weight:500;min-width:34px;text-align:right}
+.sum .s small{display:block;margin-top:2px}
+/* ---- vcards */
+.kc{border-top:5px solid var(--tc,var(--blue));background:#EEF1F5}
+.kc h3 .cnt{background:#fff;border-radius:999px;padding:0 9px;font:500 12px 'Roboto';color:var(--mut);align-self:center}
+.kd{box-shadow:var(--sh);transition:transform .08s,box-shadow .08s}.kd:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(52,64,80,.14)}
+.kd[draggable=true]{cursor:grab}
+.kd-top{display:flex;gap:10px;align-items:center}.kd-who{flex:1;min-width:0}.kd-who strong,.kd-who small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kd-top .av{width:38px;height:38px;font-size:13px}
+.kd-bot{display:flex;flex-wrap:wrap;gap:2px 6px;align-items:center;margin-top:6px}.kd-bot small{display:inline-block}
