@@ -818,7 +818,7 @@ function geocode(addr) { // serialised: public geocoders ask for at most one req
 function ensureMap() {
   if (cmap || typeof L === 'undefined') return;
   cmap = L.map(mapHost, { zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false }).setView([40.3, -74.8], 7);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(cmap); cLayer = L.layerGroup().addTo(cmap); cLines = L.layerGroup().addTo(cmap);
+  cLayer = L.layerGroup().addTo(cmap); setTileLayer(mapStyle); cLines = L.layerGroup().addTo(cmap);
   cmap.on('dragstart zoomstart', (e) => { if (!cmap._progFit) userMoved = true; });
 }
 const fitTo = (pts, max = 15) => { if (!pts.length) return; cmap._progFit = true; cmap.fitBounds(pts, { padding: [40, 40], maxZoom: max, animate: false }); setTimeout(() => { cmap._progFit = false; }, 50); };
@@ -832,11 +832,12 @@ async function updateMap(list, openPopup) {
   if (!cmap) { mapStatus.textContent = 'The map library did not load.'; return; }
   cLayer.clearLayers(); cLines.clearLayers(); const pins = new Map(), jobs = [];
   for (const c of mapList(list)) { const o = officeOf(c); if (mapOn.office && o) jobs.push({ c, addr: o, kind: 'office' }); else if (mapOn.office && mapF.approx) { const pt = approxPt(c); if (pt) jobs.push({ c, addr: 'approx:' + c.id, kind: 'approx', pt }); } if (mapOn.bldg) for (const a of c.addresses) jobs.push({ c, addr: a, kind: 'bldg' }); }
+  if (mapOn.office && !mapF.tiers.size && !mapF.kinds.size && !mapF.market) for (const [k, name] of Object.entries(firmExtra())) { const a = firmOffices()[k]; if (a && !list.some((c) => firmKey(c.company) === k)) jobs.push({ c: { id: 'firm:' + k, name, company: name, title: '', tier: '', specialty: '', market: '', addresses: [], pocs: [], phone: '', office: a, firmOnly: true }, addr: a, kind: 'office' }); }
   jobs.sort((x, y) => (y.c.id === cSel) - (x.c.id === cSel) || (geoPeek(y.addr) !== undefined) - (geoPeek(x.addr) !== undefined));
   const todo = jobs.slice(0, 500), pending = todo.filter((j) => !j.pt && geoPeek(j.addr) === undefined).length; let done = 0, shown = 0, missing = 0; const pts = [];
   const lines = () => { cLines.clearLayers(); const p = pins.get(cSel); if (!p) return; const o = p.find((x) => x.kind === 'office'); if (o) p.filter((x) => x.kind === 'bldg').forEach((b) => L.polyline([o.pos, b.pos], { color: '#E07820', weight: 2, dashArray: '4 6', interactive: false }).addTo(cLines)); };
   const popup = (c) => el('div', { style: 'max-width:240px' }, el('strong', {}, c.name), el('div', {}, [c.title, c.company].filter(Boolean).join(' · ')), officeOf(c) ? el('div', { class: 'hint' }, 'Office: ' + officeOf(c)) : el('div', { class: 'hint' }, 'Approximate: ' + (c.market || 'market') + ' area'), c.addresses.length ? el('div', { class: 'hint' }, `${c.addresses.length} closed building${c.addresses.length > 1 ? 's' : ''}`) : null,
-    el('div', { class: 'acts', style: 'margin-top:6px' }, el('button', { class: 'btn sm', onclick: () => openContact(c) }, 'Open record'), c.phone && el('a', { class: 'btn sm', href: telHref(c.phone) }, 'Call')));
+    c.firmOnly ? null : el('div', { class: 'acts', style: 'margin-top:6px' }, el('button', { class: 'btn sm', onclick: () => openContact(c) }, 'Open record'), c.phone && el('a', { class: 'btn sm', href: telHref(c.phone) }, 'Call')));
   const note = () => { mapStatus.textContent = [`${shown} pin${shown === 1 ? '' : 's'}`, pending && done < pending ? `locating ${done}/${pending}…` : '', missing ? `${missing} address${missing > 1 ? 'es' : ''} not found` : '', jobs.length > 500 ? 'first 500 shown' : ''].filter(Boolean).join(' · '); };
   for (const j of todo) {
     if (run !== mapRun) return; let pos = j.pt ? { lat: j.pt[0], lng: j.pt[1] } : geoPeek(j.addr);
@@ -1450,28 +1451,59 @@ const hash01 = (s) => { let h = 0; for (const ch of String(s)) h = (h * 31 + ch.
 const approxPt = (c) => { const p = MARKET_PT[c.market]; return p ? [p[0] + (hash01(c.id + 'a') - 0.5) * 0.07, p[1] + (hash01(c.id + 'b') - 0.5) * 0.09] : null; };
 const mapF = { tiers: new Set(), kinds: new Set(), market: '', approx: true };
 const mapList = (list) => list.filter((c) => (!mapF.tiers.size || mapF.tiers.has(tierCls(c.tier))) && (!mapF.kinds.size || mapF.kinds.has(kindOf(c))) && (!mapF.market || c.market === mapF.market));
+const firmExtra = () => (firmExtra.c ||= LS.get('necrm-firm-extra', {}));   // firms or places added by hand: key -> display name
+// ---- map styles: the standard OpenStreetMap map, a light fallback, and an optional provider set at build time (for example by FaroMaker): VITE_MAP_TILE_URL and VITE_MAP_ATTRIBUTION
+const ENV_TILE = import.meta.env.VITE_MAP_TILE_URL || '';
+const TILE_STYLES = { ...(ENV_TILE ? { platform: { name: 'Platform map', url: ENV_TILE, attr: import.meta.env.VITE_MAP_ATTRIBUTION || '', sub: 'abc' } } : {}),
+  osm: { name: 'Standard', url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', attr: '&copy; OpenStreetMap contributors', sub: 'abc' },
+  light: { name: 'Light', url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', attr: '&copy; OpenStreetMap contributors &copy; CARTO', sub: 'abcd' } };
+const mapNote = el('div', { class: 'err', style: 'margin:0 0 8px', hidden: true });
+let tileL = null, mapStyle = LS.get('necrm-map-style', ENV_TILE ? 'platform' : 'osm'), tileGood = 0, tileBad = 0;
+if (!TILE_STYLES[mapStyle]) mapStyle = Object.keys(TILE_STYLES)[0];
+function setTileLayer(k) { // swaps the base map; reports honestly when tiles cannot be reached
+  if (!cmap || !TILE_STYLES[k]) return; mapStyle = k; LS.set('necrm-map-style', k); tileGood = 0; tileBad = 0; if (tileL) cmap.removeLayer(tileL); const s = TILE_STYLES[k];
+  tileL = L.tileLayer(s.url, { maxZoom: 19, subdomains: s.sub, attribution: s.attr }).addTo(cmap); tileL.bringToBack();
+  tileL.on('tileload', () => { tileGood++; mapNote.hidden = true; });
+  const sel = document.querySelector('.mapf select[title="Map style"]'); if (sel) sel.value = k; tileL.on('tileerror', () => { tileBad++; if (tileBad === 4 && !tileGood) tileTrouble(); });
+}
+function tileTrouble() { // no tile has loaded after several failures: say so, and try the next style once
+  const keys = Object.keys(TILE_STYLES), next = keys[(keys.indexOf(mapStyle) + 1) % keys.length];
+  if (next !== mapStyle && !tileTrouble.tried?.includes(next)) { (tileTrouble.tried ||= [mapStyle]).push(next); mapNote.hidden = false; mapNote.textContent = `The "${TILE_STYLES[mapStyle].name}" map could not be loaded on this network. Trying "${TILE_STYLES[next].name}"…`; setTileLayer(next); }
+  else mapNote.hidden = false; mapNote.textContent = 'Map images are blocked on this network (pins still work and are placed from addresses). Ask IT to allow tile.openstreetmap.org or basemaps.cartocdn.com, or set VITE_MAP_TILE_URL to your approved map service.';
+}
 function openFirmOffices() {
-  const C = data.contacts, firms = new Map();
-  for (const c of C.list.filter(isPerson)) { if (!c.company) continue; const k = firmKey(c.company), f = firms.get(k) || { name: c.company, n: 0, mk: new Map() }; f.n++; if (c.market) f.mk.set(c.market, (f.mk.get(c.market) || 0) + 1); firms.set(k, f); }
-  const list = [...firms.entries()].sort((a, b) => b[1].n - a[1].n), box = el('div', {}), q = el('input', { type: 'search', placeholder: 'Find a firm', style: 'width:100%' });
-  const draw = () => box.replaceChildren(list.filter(([, f]) => !q.value || f.name.toLowerCase().includes(q.value.toLowerCase())).slice(0, 80).map(([k, f]) => {
-    const inp = el('input', { placeholder: 'Street, City, ST ZIP', value: firmOffices()[k] || '', style: 'width:100%', onchange: async (e) => { const v = e.target.value.trim(), m = firmOffices(); if (v) m[k] = v; else delete m[k]; LS.set('necrm-firm-office', m); if (v) { inp.classList.remove('bad'); const p = await geocode(v); inp.classList.toggle('bad', !p); inp.title = p ? 'Located' : 'Could not locate this address'; } } });
-    return el('div', { class: 'f', style: 'margin:8px 0' }, el('label', {}, `${f.name} · ${f.n} contact${f.n > 1 ? 's' : ''}${f.mk.size ? ' · ' + [...f.mk.entries()].sort((a, b) => b[1] - a[1])[0][0] : ''}`), inp); }));
+  const C = data.contacts, box = el('div', {}), q = el('input', { type: 'search', placeholder: 'Find a firm', style: 'width:100%' }), form = el('div', { class: 'card', style: 'padding:12px;margin:10px 0', hidden: true });
+  const build = () => { const firms = new Map();
+    for (const c of C.list.filter(isPerson)) { if (!c.company) continue; const k = firmKey(c.company), f = firms.get(k) || { name: c.company, n: 0, mk: new Map() }; f.n++; if (c.market) f.mk.set(c.market, (f.mk.get(c.market) || 0) + 1); firms.set(k, f); }
+    for (const [k, name] of Object.entries(firmExtra())) if (!firms.has(k)) firms.set(k, { name, n: 0, mk: new Map(), added: true });
+    return [...firms.entries()].sort((a, b) => (b[1].added ? 1 : 0) - (a[1].added ? 1 : 0) || b[1].n - a[1].n || a[1].name.localeCompare(b[1].name)); };
+  const locate = async (inp, v) => { if (!v) { inp.classList.remove('bad'); inp.title = ''; return; } const p = await geocode(v); inp.classList.toggle('bad', !p); inp.title = p ? 'Located' : 'Could not locate this address'; if (!p) say('Could not locate that address. Check the spelling or add the city and state.', 'err'); };
+  const draw = () => box.replaceChildren(build().filter(([, f]) => !q.value || f.name.toLowerCase().includes(q.value.toLowerCase())).slice(0, 80).map(([k, f]) => {
+    const inp = el('input', { placeholder: 'Street, City, ST ZIP', value: firmOffices()[k] || '', style: 'width:100%', onchange: async (e) => { const v = e.target.value.trim(), m = firmOffices(); if (v) m[k] = v; else delete m[k]; LS.set('necrm-firm-office', m); await locate(inp, v); } });
+    return el('div', { class: 'f', style: 'margin:8px 0' }, el('label', { style: 'display:flex;justify-content:space-between;gap:8px' }, el('span', {}, `${f.name} · ${f.n ? `${f.n} contact${f.n > 1 ? 's' : ''}` : 'added by you'}${f.mk.size ? ' · ' + [...f.mk.entries()].sort((a, b) => b[1] - a[1])[0][0] : ''}`),
+      f.added ? el('button', { class: 'btn sm', type: 'button', onclick: () => { if (!confirm(`Remove ${f.name} from the list?`)) return; delete firmExtra()[k]; delete firmOffices()[k]; LS.set('necrm-firm-extra', firmExtra()); LS.set('necrm-firm-office', firmOffices()); draw(); } }, 'Remove') : null), inp); }));
+  const nm = el('input', { placeholder: 'Firm or place name, e.g. CBRE Newark office', style: 'width:100%' }), ad = el('input', { placeholder: 'Street, City, ST ZIP', style: 'width:100%' });
+  const save = el('button', { class: 'btn pri', type: 'button', onclick: async () => { const name = nm.value.trim(), addr = ad.value.trim(); if (!name || !addr) return say('Enter a name and an address', 'err'); const k = firmKey(name);
+    firmExtra()[k] = firmExtra()[k] || name; firmOffices()[k] = addr; LS.set('necrm-firm-extra', firmExtra()); LS.set('necrm-firm-office', firmOffices()); nm.value = ''; ad.value = ''; form.hidden = true; q.value = ''; draw();
+    const p = await geocode(addr); say(p ? `${name} added and located` : 'Added, but that address could not be located. Check the spelling.', p ? undefined : 'err'); } }, 'Add to the list');
+  form.append(el('b', {}, 'Add a firm or place'), el('div', { class: 'f', style: 'margin:8px 0' }, el('label', {}, 'Name'), nm), el('div', { class: 'f', style: 'margin:8px 0' }, el('label', {}, 'Office address'), ad), el('div', { class: 'bar', style: 'margin:0' }, save, el('button', { class: 'btn', type: 'button', onclick: () => { form.hidden = true; } }, 'Cancel')));
   q.addEventListener('input', draw); draw();
-  openSheet(el('h2', {}, 'Firm office addresses'), el('p', { class: 'hint' }, 'Enter one office address per firm and every contact at that firm gets a pin. A contact\'s own office address still takes priority. Saved on this device.'), q, box,
+  openSheet(el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', {}, 'Firm office addresses'), el('button', { class: 'btn pri', type: 'button', onclick: () => { form.hidden = !form.hidden; if (!form.hidden) nm.focus(); } }, '+ Add new')),
+    el('p', { class: 'hint' }, 'Enter one office address per firm and every contact at that firm gets a pin. A contact\'s own office address still takes priority. Use Add new for a firm or place that is not in your contact list. Saved on this device.'), form, q, box,
     el('div', { class: 'bar' }, el('button', { class: 'btn pri', onclick: () => { closeSheet(); updateMap(curList); } }, 'Done')));
 }
 function mapColumn() {
-  const C = data.contacts, none = !C.list.some((c) => officeOf(c) || c.addresses.length);
+  const C = data.contacts, none = !C.list.some((c) => officeOf(c) || c.addresses.length) && !Object.keys(firmExtra()).length;
   const chip = (set, key, label, color) => { const b = el('button', { class: 'fchip' + (set.has(key) ? ' on' : ''), style: `--c:${color}`, onclick: () => { set.has(key) ? set.delete(key) : set.add(key); b.classList.toggle('on'); updateMap(curList); } }, label); return b; };
   const tg = (get, set, label) => el('label', { class: 'mtg' }, el('input', { type: 'checkbox', checked: get(), onchange: (e) => { set(e.target.checked); updateMap(curList); } }), label);
   const mk = el('select', { onchange: (e) => { mapF.market = e.target.value; updateMap(curList); } }, el('option', { value: '' }, 'All markets'), [...new Set(C.list.map((c) => c.market).filter(Boolean))].sort().map((m) => el('option', { value: m }, m))); mk.value = mapF.market;
+  const style = el('select', { title: 'Map style', onchange: (e) => { tileTrouble.tried = null; setTileLayer(e.target.value); } }, Object.entries(TILE_STYLES).map(([k, s]) => el('option', { value: k }, 'Map: ' + s.name))); style.value = mapStyle;
   return el('div', { class: 'mapcol' }, el('div', { class: 'mapf' },
     el('div', { class: 'mrow' }, el('b', {}, 'Tier'), ['t1', 't2', 't3', 'tx', 'tn'].map((k) => chip(mapF.tiers, k, TIER_NAME[k], TIER_COLOR[k]))),
-    el('div', { class: 'mrow' }, el('b', {}, 'Type'), KINDS.map((k) => chip(mapF.kinds, k, k === 'Principal' ? 'Principals' : k, KIND_COLOR[k])), mk),
+    el('div', { class: 'mrow' }, el('b', {}, 'Type'), KINDS.map((k) => chip(mapF.kinds, k, k === 'Principal' ? 'Principals' : k, KIND_COLOR[k])), mk, style),
     el('div', { class: 'mrow' }, tg(() => mapOn.office, (v) => (mapOn.office = v), 'Offices'), tg(() => mapOn.bldg, (v) => (mapOn.bldg = v), 'Closed buildings'), tg(() => mapF.approx, (v) => (mapF.approx = v), 'Approximate (market area)'), el('button', { class: 'btn sm', onclick: openFirmOffices }, 'Set firm offices'))),
-    none && el('div', { class: 'panel', style: 'max-width:none;margin:0 0 8px;padding:12px' }, el('b', {}, 'No office addresses on the board yet. '), 'Faded pins show each contact\'s market area. Use Set firm offices to enter one address per firm and every contact at that firm is placed exactly.'),
-    mapHost, mapStatus);
+    none && el('div', { class: 'panel', style: 'max-width:none;margin:0 0 8px;padding:12px' }, el('b', {}, 'No office addresses on the board yet. '), 'Faded pins show each contact\'s market area. Use Set firm offices to enter one address per firm, or add a new firm or place, and the pins are placed exactly.'),
+    mapNote, mapHost, mapStatus);
 }
 
 // ---- calendar: only Outlook events that include a CRM contact, with keywords deciding what is kept
@@ -1576,6 +1608,8 @@ const workbookButton = () => { const wb = el('input', { type: 'file', accept: '.
 const vcF = { q: '', kind: '' };
 async function moveTier(c, lab) { const C = data.contacts; if (!c || !lab || c.tier === lab) return; c.tier = lab; say(await enqueue({ type: 'column', boardId: C.id, itemId: c.id, columnId: C.roles.tier.id, value: { label: lab } })); renderPipeline(); }
 function renderPipeline() {
+  const refocus = !!(document.activeElement && document.activeElement.matches && document.activeElement.matches('#view input[type=search]'));
+  if (vcMap) { vcMap.remove(); vcMap = null; }
   const C = data.contacts; if (!C) return $('#view').replaceChildren(el('p', { class: 'hint' }, 'Loading…'));
   const R = C.roles, people = C.list.filter(isPerson), labels = (R.tier?.labels || []).map((l) => l.label).filter(Boolean);
   if (!R.tier) return $('#view').replaceChildren(el('div', { class: 'panel' }, el('h2', {}, 'No tier column'), el('p', {}, 'Vcards groups contacts by the board\'s Tier status column, which was not found.')));
@@ -1590,7 +1624,7 @@ function renderPipeline() {
         el('div', { class: 'kd-bot' }, kindChip(c), dueChip(c), pocOf(c) && el('small', {}, 'POC ' + pocOf(c))), el('select', { class: 'kd-move', 'aria-label': 'Move to tier', onclick: (e) => e.stopPropagation(), onchange: (e) => moveTier(c, e.target.value) }, el('option', { value: '' }, 'Move to tier…'), cols.filter((x) => x && x !== c.tier).map((l) => el('option', { value: l }, l)))); }), list.length > 40 && el('p', { class: 'hint' }, `+${list.length - 40} more (narrow with search or type)`)); }));
   const search = el('input', { type: 'search', placeholder: 'Search name, company or phone', value: vcF.q, style: 'flex:1 1 200px', oninput: (e) => { vcF.q = e.target.value; clearTimeout(vcT); vcT = setTimeout(renderPipeline, 250); } });
   const pills = el('div', { class: 'pills' }, [['', 'All']].concat(KINDS.filter((k) => people.some((c) => kindOf(c) === k)).map((k) => [k, k === 'Principal' ? 'Principals' : k])).map(([k, l]) => el('button', { class: 'tp' + (vcF.kind === k ? ' on' : ''), style: k ? `--c:${KIND_COLOR[k]}` : '', onclick: () => { vcF.kind = k; renderPipeline(); } }, l)));
-  $('#view').replaceChildren(el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', { style: 'font-size:22px' }, 'Vcards'), el('span', { class: 'hint' }, 'Drag a card to another tier, or use Move to tier on the card.')), el('div', { class: 'bar' }, search), pills, board);
+  $('#view').replaceChildren(el('div', { class: 'bar', style: 'justify-content:space-between' }, el('h2', { style: 'font-size:22px' }, 'Vcards'), el('span', { class: 'hint' }, 'Drag a card to another tier, or use Move to tier on the card.')), el('div', { class: 'bar' }, search), pills, vcLayout(board)); if (refocus) { search.focus(); const n = search.value.length; search.setSelectionRange(n, n); }
 }
 let vcT = 0;
 
@@ -1726,6 +1760,54 @@ async function openNavanPull() { // any date range, and every transaction, for w
 
 // installable app: cache the shell so the CRM opens from the home screen
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+
+// ---------------------------------------------------------------- Vcards company panel: when you search a company, show how many brokers we have there, who sends the most deal flow, and where their offices are
+// Deal flow comes from the board's "Deals Closed / Won" flag until a FarOS export is imported (a CSV with each broker's email and a deal count); FarOS is not connected live.
+const dealFlow = () => (dealFlow.c ||= LS.get('necrm-dealflow', { at: 0, by: {} }));
+const flowOf = (c) => { const d = dealFlow().by[(c.email || '').toLowerCase()]; return d ? { n: Number(d.deals) || 0, last: d.last || '', src: 'FarOS export' } : { n: Number(c.closed) || 0, last: '', src: 'board' }; };
+function companyHits(q) { // companies whose name matches what was typed, with every contact we have there
+  const k = firmKey(q); if (k.length < 2) return []; const m = new Map();
+  for (const c of data.contacts.list.filter(isPerson)) { if (!c.company) continue; const ck = firmKey(c.company); if (!ck || !(ck.includes(k) || (ck.length > 2 && k.includes(ck)))) continue; const e = m.get(ck) || { key: ck, name: c.company, list: [] }; e.list.push(c); m.set(ck, e); }
+  return [...m.values()].sort((a, b) => b.list.length - a.list.length);
+}
+let vcMap = null, vcCo = '';
+async function vcMiniMap(host, co) {
+  if (typeof L === 'undefined') { host.textContent = 'The map library did not load.'; return; } if (vcMap) { vcMap.remove(); vcMap = null; }
+  const m = L.map(host).setView([40.3, -74.8], 8); vcMap = m; const st = TILE_STYLES[mapStyle]; L.tileLayer(st.url, { maxZoom: 19, subdomains: st.sub, attribution: st.attr }).addTo(m);
+  const pts = [], pin = (lat, lng, label, color, dash) => { L.circleMarker([lat, lng], { radius: 8, fillColor: color, fillOpacity: dash ? 0.4 : 1, color: dash ? color : '#fff', weight: 2, dashArray: dash ? '3 3' : null }).addTo(m).bindTooltip(label); pts.push([lat, lng]); };
+  const addrs = new Map(), firm = firmOffices()[co.key]; if (firm) addrs.set(firm, 'Firm office'); for (const c of co.list) if (c.office && !addrs.has(c.office)) addrs.set(c.office, 'Office: ' + c.name);
+  for (const [a, label] of addrs) { let pos = geoPeek(a); if (pos === undefined) pos = await geocode(a); if (vcMap !== m) return; if (pos) pin(pos.lat, pos.lng, label, '#1B2A3A', false); }
+  if (!pts.length) for (const mk of [...new Set(co.list.map((c) => c.market).filter(Boolean))]) { const p = MARKET_PT[mk]; if (p) pin(p[0], p[1], mk + ' (approximate)', '#F59E0B', true); }
+  if (vcMap === m && pts.length) m.fitBounds(pts, { padding: [30, 30], maxZoom: 12 }); setTimeout(() => vcMap === m && m.invalidateSize(), 80);
+}
+function vcImportFlow() {
+  const f = el('input', { type: 'file', accept: '.csv,text/csv', hidden: true, onchange: async (e) => { const file = e.target.files[0]; e.target.value = ''; if (!file) return; const [head, ...rows] = csvTable(await file.text()); if (!head) return say('That file is empty', 'err');
+    const h = head.map((x) => x.trim().toLowerCase()), ei = h.findIndex((x) => /e-?mail/.test(x)), di = h.findIndex((x) => /deal|count|closed|received|total/.test(x)), li = h.findIndex((x) => /last|date/.test(x));
+    if (ei < 0) return say('The file needs an email column (one row per broker)', 'err'); const by = {}; let n = 0;
+    for (const r of rows) { const em = (r[ei] || '').trim().toLowerCase(); if (!em) continue; const d = di >= 0 ? Number(String(r[di]).replace(/[^0-9.]/g, '')) || 0 : 1; by[em] = { deals: (by[em]?.deals || 0) + (di >= 0 ? d : 1), last: li >= 0 ? (r[li] || '').trim().slice(0, 10) : by[em]?.last || '' }; n++; }
+    const store = { at: Date.now(), by }; LS.set('necrm-dealflow', store); dealFlow.c = store; say(`Deal flow loaded for ${Object.keys(by).length} brokers`); renderPipeline(); } });
+  return el('span', {}, el('button', { class: 'btn sm', title: 'A CSV with one row per broker: an email column, and a deal count (and optionally a last deal date)', onclick: () => f.click() }, dealFlow().at ? 'Re-import deal flow (CSV)' : 'Import deal flow (CSV)'), f);
+}
+function vcCompanyPanel(co, hits) {
+  const tiers = { t1: 0, t2: 0, t3: 0, other: 0 }; for (const c of co.list) { const t = tierCls(c.tier); if (t in tiers) tiers[t]++; else tiers.other++; }
+  const ranked = co.list.map((c) => ({ c, ...flowOf(c) })).sort((a, b) => b.n - a.n || a.c.name.localeCompare(b.c.name)), totalDeals = ranked.reduce((a, r) => a + r.n, 0), mx = Math.max(1, ...ranked.map((r) => r.n)), imported = dealFlow().at;
+  const firm = firmOffices()[co.key], offices = new Map(); for (const c of co.list) if (c.office) offices.set(c.office, (offices.get(c.office) || 0) + 1);
+  const markets = [...new Set(co.list.map((c) => c.market).filter(Boolean))], host = el('div', { class: 'vc-map' });
+  const panel = el('div', { class: 'vc-panel' },
+    hits.length > 1 ? el('div', { class: 'pills', style: 'padding:0 0 8px' }, hits.slice(0, 6).map((h) => el('button', { class: 'tp' + (h.key === co.key ? ' on' : ''), onclick: () => { vcCo = h.key; renderPipeline(); } }, h.name, el('b', {}, h.list.length)))) : null,
+    el('div', { class: 'card chart', style: 'margin:0 0 10px' }, el('div', { class: 'sub', style: 'margin:0' }, 'Company'), el('h2', { style: 'margin:0 0 6px' }, co.name),
+      el('div', { style: 'display:flex;align-items:baseline;gap:8px' }, el('b', { style: 'font:500 34px "Clash Display",Arial;color:var(--blue)' }, co.list.length), el('span', { class: 'hint' }, `broker${co.list.length === 1 ? '' : 's'} in the CRM`)),
+      el('div', { class: 'hint' }, [`Tier 1: ${tiers.t1}`, `Tier 2: ${tiers.t2}`, `Tier 3: ${tiers.t3}`, tiers.other ? `Other: ${tiers.other}` : ''].filter(Boolean).join(' · '))),
+    el('div', { class: 'card chart', style: 'margin:0 0 10px' }, el('div', { class: 'bar', style: 'justify-content:space-between;margin:0' }, el('h2', { style: 'margin:0' }, 'Deal flow'), vcImportFlow()),
+      el('div', { class: 'sub' }, totalDeals ? `${totalDeals} deals from ${ranked.filter((r) => r.n).length} brokers · ${imported ? 'FarOS export' : 'board "Deals Closed / Won" flag'}` : 'No deal flow recorded for this company yet.'),
+      totalDeals ? el('div', { class: 'bars' }, ranked.filter((r) => r.n).slice(0, 8).map((r, i) => el('div', { class: 'brow', style: 'cursor:pointer', onclick: () => openContact(r.c) }, el('span', { class: 'bl', title: r.c.name }, (i === 0 ? '★ ' : '') + r.c.name), el('div', { class: 'bt' }, el('i', { style: `width:${Math.max(4, r.n / mx * 100)}%;background:#F59E0B` })), el('b', {}, r.n))))
+        : el('p', { class: 'hint', style: 'margin:6px 0 0' }, 'The board only flags closed deals. Import an export from FarOS (broker email and number of deals) to rank who sends the most.')),
+    el('div', { class: 'card chart', style: 'margin:0' }, el('div', { class: 'bar', style: 'justify-content:space-between;margin:0' }, el('h2', { style: 'margin:0' }, 'Office locations'), el('button', { class: 'btn sm', onclick: openFirmOffices }, firm || offices.size ? 'Edit' : 'Set address')),
+      el('div', { class: 'sub' }, firm || offices.size ? '' : `No office address yet.${markets.length ? ' Pins show the market area: ' + markets.join(', ') + '.' : ''}`),
+      firm ? el('div', { class: 'note' }, 'Firm office', el('small', {}, firm)) : null, [...offices].map(([a, n]) => el('div', { class: 'note' }, a, el('small', {}, `${n} contact${n > 1 ? 's' : ''}`))), host));
+  setTimeout(() => vcMiniMap(host, co), 60); return panel;
+}
+function vcLayout(board) { const hits = vcF.q.trim().length >= 2 ? companyHits(vcF.q) : []; if (vcMap && !hits.length) { vcMap.remove(); vcMap = null; } if (!hits.length) return board; const co = hits.find((h) => h.key === vcCo) || hits[0]; vcCo = co.key; return el('div', { class: 'vc-split' }, el('div', { class: 'vc-main' }, board), vcCompanyPanel(co, hits)); }
 
 // ---------------------------------------------------------------- boot
 $('#mode').onclick = async () => { if (!cfg.token || demo) return; await flush(); await load(); say('Refreshed from Monday'); };
