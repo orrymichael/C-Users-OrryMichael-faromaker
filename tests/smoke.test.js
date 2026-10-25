@@ -28,9 +28,9 @@ const b = await chromium.launch(), errs = [];
 // 3. PostHog: key and host come from build-time env (Hub injects them); identify by FaroMaker user id only.
 { execFileSync('npx', ['vite', 'build', '--outDir', 'dist-ph', '--logLevel', 'error'], { env: { ...process.env, VITE_POSTHOG_KEY: 'phc_testkey', VITE_POSTHOG_HOST: 'https://ph.example' }, stdio: 'inherit' });
   const app = await listen(createApp({ DIST_DIR: 'dist-ph' })), ctx = await b.newContext({ extraHTTPHeaders: { 'x-faromaker-user-id': 'u_42' } }), p = await ctx.newPage(), events = [];
-  await ctx.route('https://ph.example/**', async (r) => { const buf = r.request().postDataBuffer(); if (buf) { let t; try { t = zlib.gunzipSync(buf).toString(); } catch { t = buf.toString(); } events.push(t); } await r.fulfill({ status: 200, contentType: 'application/json', body: '{"status":1}' }); });
+  await ctx.route('https://ph.example/**', async (r) => { const buf = r.request().postDataBuffer(); if (buf) { let t; try { t = zlib.gunzipSync(buf).toString(); } catch { t = buf.toString(); } if (t.startsWith('data=')) { try { t += '\n' + Buffer.from(decodeURIComponent(t.slice(5)), 'base64').toString(); } catch { /* keep raw */ } } events.push(t); } await r.fulfill({ status: 200, contentType: 'application/json', body: '{"status":1}' }); });
   await p.goto(app.url); await p.waitForSelector('text=Preview with sample data'); await p.click('text=Preview with sample data'); await p.waitForSelector('.sum');
-  for (let i = 0; i < 30 && !events.length; i++) await p.waitForTimeout(500);
+  for (let i = 0; i < 40 && !events.join('').includes('$identify'); i++) await p.waitForTimeout(500);
   const all = events.join('\n'); assert.ok(all.includes('phc_testkey') || all.includes('$identify'), 'PostHog received events: ' + all.slice(0, 300)); assert.ok(all.includes('u_42'), 'identified by FaroMaker user id'); assert.ok(!all.includes('@'), 'no email or other PII');
   await ctx.close(); app.s.close(); }
 await b.close(); upstream.s.close();
