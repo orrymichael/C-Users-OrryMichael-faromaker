@@ -67,6 +67,7 @@ const banner = (t) => { const b = el('div', { class: 'err' }, t); $('#view').pre
 // FaroMaker: the backend holds the Monday token and proxies calls, so the browser never sees it. Without the backend the app falls back to a token typed in Settings.
 const SERVER = { monday: false, faros: false, user: null };
 async function initServer() {
+  if (location.protocol === 'file:') return;   // opened from disk: no server, sample data only
   try { const h = await (await fetch('/api/health')).json(); SERVER.monday = !!h.monday; SERVER.faros = !!h.faros; } catch { /* no backend: standalone mode */ }
   if (SERVER.monday) cfg.token = 'server-managed'; else if (cfg.token === 'server-managed') cfg.token = '';
   try { const me = await (await fetch('/api/me')).json(); if (me?.id) { SERVER.user = me.id; identifyUser(me.id); } } catch { /* anonymous */ }
@@ -1671,7 +1672,7 @@ const navanHist = () => LS.get('necrm-navan-hist', { rows: [], at: 0, from: '' }
 function navanHistMerge(rows) { const h = navanHist(), by = new Map(h.rows.map((r) => [r.key, r])); for (const r of rows.filter((x) => x.sports)) by.set(r.key, { key: r.key, date: r.date, amount: r.amount, merchant: r.merchant, ticket: r.ticket }); h.rows = [...by.values()].sort((a, b) => b.date.localeCompare(a.date)); h.at = Date.now(); LS.set('necrm-navan-hist', h); return h; }
 function navanBadge() { const n = navanOpen().length, b = document.querySelector('#tabs button[data-t="plan"]'); if (b) { if (n) b.setAttribute('data-n', n > 9 ? '9+' : String(n)); else b.removeAttribute('data-n'); } }
 async function navanFetch(from, to) { const r = await fetch(`/api/navan/card-transactions?from=${from}&to=${to}`), j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`); if (j.note) navanInbox.err = j.note; return (j.transactions || []).map(navanRow); }
-async function navanStatus() { if (navanInbox.configured === null) { const j = await (await fetch('/api/navan/status')).json(); navanInbox.configured = !!j.configured; navanInbox.needs = j.needs || null; } return navanInbox.configured; }
+async function navanStatus() { if (location.protocol === 'file:') return false; if (navanInbox.configured === null) { const j = await (await fetch('/api/navan/status')).json(); navanInbox.configured = !!j.configured; navanInbox.needs = j.needs || null; } return navanInbox.configured; }
 async function navanAuto() { // checks Navan in the background, so a new outing charge appears without anyone pulling it
   if (navanInbox.busy) return; navanInbox.busy = true;
   try { if (!(await navanStatus())) return; const t = today(); navanInbox.rows = await navanFetch(addDays(t, -14), t); navanHistMerge(navanInbox.rows); navanInbox.at = Date.now(); navanInbox.err = ''; }
@@ -1729,4 +1730,4 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 // ---------------------------------------------------------------- boot
 $('#mode').onclick = async () => { if (!cfg.token || demo) return; await flush(); await load(); say('Refreshed from Monday'); };
 setQ(getQ());
-(async () => { await initServer(); render(); await ms.finish(); if (cfg.token) { await flush(); await load(); const q = new URLSearchParams(location.search); if (q.get('new') && data.contacts) { handleDeepLink(q); history.replaceState(null, '', location.pathname); } } })();
+(async () => { await initServer(); if (location.protocol === 'file:' && !cfg.token) startDemo(); render(); await ms.finish(); if (cfg.token) { await flush(); await load(); const q = new URLSearchParams(location.search); if (q.get('new') && data.contacts) { handleDeepLink(q); history.replaceState(null, '', location.pathname); } } })();

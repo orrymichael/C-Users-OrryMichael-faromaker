@@ -4,3 +4,4 @@ dist
 .env.*
 !.env.example
 dist-ph
+dist-single

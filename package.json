@@ -8,8 +8,15 @@
     "dev:server": "node --env-file-if-exists=.env server/index.js",
     "build": "vite build",
     "start": "node --env-file-if-exists=.env server/index.js",
-    "test": "node --test --test-force-exit server/app.test.js && node tests/smoke.test.js"
+    "test": "node --test --test-force-exit server/app.test.js && node tests/smoke.test.js",
+    "build:single": "vite build && node scripts/build-single.mjs"
   },
-  "dependencies": { "express": "^5.1.0", "leaflet": "^1.9.4", "posthog-js": "^1.438.0" },
-  "devDependencies": { "vite": "^8.0.0" }
+  "dependencies": {
+    "express": "^5.1.0",
+    "leaflet": "^1.9.4",
+    "posthog-js": "^1.438.0"
+  },
+  "devDependencies": {
+    "vite": "^8.0.0"
+  }
 }
